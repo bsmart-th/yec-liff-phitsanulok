@@ -330,6 +330,7 @@ async function init() {
 
     // Already registered? Show status instead of the form.
     const rec = await api({ action: "status", lineUserId: profile.userId, idToken });
+    if (rec && rec.ok === false) throw new Error(rec.error || "Could not load your status");
     if (rec && rec.status && rec.status !== "none") showStatus(rec);
     else show("form");
   } catch (err) {

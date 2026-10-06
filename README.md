@@ -36,7 +36,7 @@ At the top of the `<script>` in `index.html`:
 ```js
 const CONFIG = {
   LIFF_ID: "2001234567-AbCdEfGh",     // from step 2
-  SUBMIT_URL: "https://script.google.com/macros/s/…/exec", // from the Google Sheet step (next thread)
+  SUBMIT_URL: "https://script.google.com/macros/s/…/exec", // from section 5 below
   MAX_MEMBERS: 20,
 };
 ```
@@ -52,7 +52,36 @@ The placeholder questions live in the `FIELDS` object right under `CONFIG`:
 
 Each field is `{ key, label, type, required }`. Types: `text`, `tel`, `email`, `select` (add `options: [...]`), `textarea`.
 
-## For the backend (step 2)
+## 5. Google Sheet backend (stores registrations, admin approves here)
+
+The backend is `backend/Code.gs`, a Google Apps Script attached to a Google Sheet. Free, nothing to host.
+
+1. Create a new Google Sheet (e.g. "YEC Registrations") with the Google account that should own the data.
+2. **Extensions → Apps Script**. Delete what's in `Code.gs`, paste the whole of [`backend/Code.gs`](backend/Code.gs), and click **Save**.
+3. **Project Settings** (gear icon) → **Script properties** → **Add script property**:
+   - Property `LINE_CHANNEL_ID`, value = the **Channel ID** of your LINE Login channel (LINE Developers console → the channel → **Basic settings**). This lets the backend check every request really comes from that LINE user.
+4. Back in the editor, pick `setup` in the function dropdown and click **Run**. Google asks for permission the first time (Review permissions → your account → Advanced → Go to project → Allow). This creates the **Registrations** tab.
+5. **Deploy → New deployment** → type **Web app**:
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+   Click **Deploy** and copy the **Web app URL** (ends in `/exec`).
+6. Paste that URL as `SUBMIT_URL` in `index.html` (section 3), commit and push.
+
+**If you change the script later**, use **Deploy → Manage deployments → ✏️ Edit → Version: New version → Deploy**. That keeps the same URL; a "New deployment" would give a new one.
+
+### Approving registrations
+
+Each sign-up is one row in **Registrations**, starting as `Pending`.
+- Set **Status** to `Approved` or `Rejected` from the dropdown. **Reviewed at** fills itself in.
+- **Note to applicant** is optional; for a rejection it's shown to the person as the reason.
+- The person sees the new status the next time they open the page.
+- Groups are one row: the contact person's answers are in their own columns, other members are listed in **Members**, and **People** is the head count.
+- One registration per LINE account. To let someone register again, delete their row.
+- Each form question gets its own column automatically, so changing the form later needs no sheet changes. Two columns are hidden on purpose (LINE user ID and the raw data the page reads back); leave them as they are.
+
+Later add-on: a LINE message to the person when they're approved (needs a LINE Official Account linked to the LIFF channel).
+
+## Backend API (for reference)
 
 The page POSTs JSON with `Content-Type: text/plain` (avoids a CORS preflight Apps Script can't answer):
 
