@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>YEC Registration</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js" charset="utf-8"></script>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --text: #1d2129; --muted: #6b7280;
+    --line: #06c755; --line-dark: #05a647; --border: #d9dce1; --danger: #d93025;
+    --warn-bg: #fff7e0; --warn: #8a6100; --ok-bg: #e6f8ee; --bad-bg: #fdecea;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; }
+  main { max-width: 560px; margin: 0 auto; padding: 16px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 0 0 12px; }
+  .sub { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
+  .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+  .profile { display: flex; align-items: center; gap: 12px; }
+  .profile img { width: 44px; height: 44px; border-radius: 50%; background: #ddd; object-fit: cover; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .seg label { border: 2px solid var(--border); border-radius: 10px; padding: 12px; text-align: center;
+    cursor: pointer; font-weight: 600; }
+  .seg input { display: none; }
+  .seg input:checked + span { color: var(--line-dark); }
+  .seg label:has(input:checked) { border-color: var(--line); background: #f0fbf4; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .field .req { color: var(--danger); }
+  input[type=text], input[type=tel], input[type=email], select, textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font: inherit; background: #fff; color: inherit; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--line); border-color: transparent; }
+  .invalid { border-color: var(--danger) !important; }
+  .member { border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .member-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .link-btn { background: none; border: 0; color: var(--danger); font: inherit; font-size: 14px; cursor: pointer; padding: 4px; }
+  .btn { display: block; width: 100%; padding: 14px; border: 0; border-radius: 10px; font: inherit;
+    font-weight: 700; cursor: pointer; }
+  .btn-primary { background: var(--line); color: #fff; }
+  .btn-primary:disabled { opacity: .6; cursor: default; }
+  .btn-ghost { background: #fff; color: var(--line-dark); border: 2px dashed var(--line); }
+  .error { color: var(--danger); font-size: 14px; margin: 8px 0 0; }
+  .hidden { display: none !important; }
+  .center { text-align: center; }
+  .badge { display: inline-block; padding: 6px 14px; border-radius: 999px; font-weight: 700; margin: 8px 0; }
+  .badge.pending { background: var(--warn-bg); color: var(--warn); }
+  .badge.approved { background: var(--ok-bg); color: var(--line-dark); }
+  .badge.rejected { background: var(--bad-bg); color: var(--danger); }
+  .icon { font-size: 48px; line-height: 1; margin-top: 8px; }
+  .summary { text-align: left; font-size: 14px; color: var(--muted); margin-top: 12px; }
+  .demo { background: var(--warn-bg); color: var(--warn); font-size: 13px; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <div id="demo-banner" class="demo hidden">Demo mode: LIFF ID or submit URL is not set, so nothing is really sent.</div>
+
+  <!-- Loading -->
+  <section id="view-loading" class="card center"><p>Loading…</p></section>
+
+  <!-- Error -->
+  <section id="view-error" class="card center hidden">
+    <div class="icon">⚠️</div>
+    <h2>Something went wrong</h2>
+    <p id="error-text" class="sub"></p>
+    <button class="btn btn-primary" onclick="location.reload()">Try again</button>
+  </section>
+
+  <!-- Form -->
+  <section id="view-form" class="hidden">
+    <h1>YEC Registration</h1>
+    <p class="sub">Register yourself or a group. An admin will review your sign-up.</p>
+
+    <div class="card profile">
+      <img id="profile-pic" alt="">
+      <div><div id="profile-name" style="font-weight:600"></div><div class="sub" style="margin:0">Signed in with LINE</div></div>
+    </div>
+
+    <form id="reg-form" novalidate>
+      <div class="card">
+        <h2>Registration type</h2>
+        <div class="seg">
+          <label><input type="radio" name="type" value="individual" checked><span>Individual</span></label>
+          <label><input type="radio" name="type" value="group"><span>Group</span></label>
+        </div>
+      </div>
+
+      <!-- Placeholder fields: replace with the real YEC form later (see FIELDS below). -->
+      <div class="card">
+        <h2 id="main-title">Your details</h2>
+        <div id="main-fields"></div>
+      </div>
+
+      <div id="group-block" class="card hidden">
+        <h2>Group</h2>
+        <div id="group-fields"></div>
+        <h2 style="margin-top:8px">Members</h2>
+        <div id="members"></div>
+        <button type="button" id="add-member" class="btn btn-ghost">+ Add member</button>
+      </div>
+
+      <button type="submit" id="submit-btn" class="btn btn-primary">Submit registration</button>
+      <p id="form-error" class="error hidden"></p>
+    </form>
+  </section>
+
+  <!-- Status (shown after submit, and whenever a registered user reopens the page) -->
+  <section id="view-status" class="card center hidden">
+    <div id="status-icon" class="icon">⏳</div>
+    <h2 id="status-title">Waiting for validation</h2>
+    <span id="status-badge" class="badge pending">Pending</span>
+    <p id="status-text" class="sub">Thanks! Your registration was received. An admin will review it soon. You can reopen this page any time to check your status.</p>
+    <div id="status-summary" class="summary"></div>
+    <button class="btn btn-primary" onclick="closeApp()" style="margin-top:12px">Close</button>
+  </section>
+</main>
+
+<script>
+/* ================== CONFIG: edit these two values ================== */
+const CONFIG = {
+  // From LINE Developers console > your LINE Login channel > LIFF tab, e.g. "2001234567-AbCdEfGh"
+  LIFF_ID: "",
+  // Google Apps Script web app URL (step 2), e.g. "https://script.google.com/macros/s/XXXX/exec"
+  SUBMIT_URL: "",
+  // Max members allowed in a group (excluding the contact person)
+  MAX_MEMBERS: 20,
+};
+
+/* ============ PLACEHOLDER FIELDS: swap for the real YEC form ============
+   type: text | tel | email | select | textarea ; options for select ; required true/false */
+const FIELDS = {
+  // Individual registrant, or the group's contact person
+  person: [
+    { key: "fullName",  label: "Full name",       type: "text",  required: true },
+    { key: "nickname",  label: "Nickname",        type: "text",  required: false },
+    { key: "phone",     label: "Phone",           type: "tel",   required: true, pattern: "^[0-9+\\-\\s]{9,15}$" },
+    { key: "email",     label: "Email",           type: "email", required: false },
+    { key: "company",   label: "Company / Organization", type: "text", required: false },
+    { key: "province",  label: "Province",        type: "text",  required: false },
+  ],
+  // Group-level fields
+  group: [
+    { key: "groupName", label: "Group / Team name", type: "text", required: true },
+  ],
+  // Each additional group member
+  member: [
+    { key: "fullName",  label: "Full name", type: "text", required: true },
+    { key: "phone",     label: "Phone",     type: "tel",  required: false, pattern: "^[0-9+\\-\\s]{9,15}$" },
+    { key: "email",     label: "Email",     type: "email", required: false },
+  ],
+};
+/* ======================================================================= */
+
+const DEMO = !CONFIG.LIFF_ID || !CONFIG.SUBMIT_URL;
+let profile = null, idToken = null, memberSeq = 0;
+const $ = (id) => document.getElementById(id);
+
+function show(view) {
+  ["loading", "error", "form", "status"].forEach(v => $("view-" + v).classList.toggle("hidden", v !== view));
+}
+function fail(msg) { $("error-text").textContent = msg; show("error"); }
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+function fieldHtml(f, prefix) {
+  const id = prefix + f.key;
+  const req = f.required ? ' <span class="req">*</span>' : "";
+  let input;
+  if (f.type === "select") {
+    input = `<select id="${id}" data-key="${f.key}" ${f.required ? "required" : ""}><option value="">Select…</option>` +
+      (f.options || []).map(o => `<option>${esc(o)}</option>`).join("") + `</select>`;
+  } else if (f.type === "textarea") {
+    input = `<textarea id="${id}" data-key="${f.key}" rows="3" ${f.required ? "required" : ""}></textarea>`;
+  } else {
+    input = `<input id="${id}" data-key="${f.key}" type="${f.type}" ${f.required ? "required" : ""} ${f.pattern ? `pattern="${f.pattern}"` : ""}>`;
+  }
+  return `<div class="field"><label for="${id}">${esc(f.label)}${req}</label>${input}</div>`;
+}
+
+function collect(container) {
+  const out = {};
+  container.querySelectorAll("[data-key]").forEach(el => { out[el.dataset.key] = el.value.trim(); });
+  return out;
+}
+
+function addMember() {
+  const count = $("members").children.length;
+  if (count >= CONFIG.MAX_MEMBERS) return;
+  const n = ++memberSeq;
+  const div = document.createElement("div");
+  div.className = "member";
+  div.innerHTML = `<div class="member-head"><strong class="m-title"></strong>
+    <button type="button" class="link-btn">Remove</button></div>` +
+    FIELDS.member.map(f => fieldHtml(f, `m${n}_`)).join("");
+  div.querySelector(".link-btn").onclick = () => { div.remove(); renumber(); };
+  $("members").appendChild(div);
+  renumber();
+}
+function renumber() {
+  const items = [...$("members").children];
+  items.forEach((m, i) => m.querySelector(".m-title").textContent = `Member ${i + 1}`);
+  $("add-member").classList.toggle("hidden", items.length >= CONFIG.MAX_MEMBERS);
+}
+
+function setType(type) {
+  const isGroup = type === "group";
+  $("group-block").classList.toggle("hidden", !isGroup);
+  $("main-title").textContent = isGroup ? "Contact person (you)" : "Your details";
+  if (isGroup && $("members").children.length === 0) addMember();
+}
+
+function validate() {
+  const type = document.querySelector("input[name=type]:checked").value;
+  const scope = type === "group" ? $("reg-form") : $("main-fields");
+  let firstBad = null;
+  scope.querySelectorAll("[data-key]").forEach(el => {
+    const bad = !el.checkValidity();
+    el.classList.toggle("invalid", bad);
+    if (bad && !firstBad) firstBad = el;
+  });
+  if (firstBad) { firstBad.focus(); firstBad.scrollIntoView({ block: "center" }); }
+  return !firstBad;
+}
+
+async function api(payload) {
+  if (DEMO) {
+    await new Promise(r => setTimeout(r, 500));
+    if (payload.action === "status") return JSON.parse(localStorage.getItem("yec_demo") || '{"status":"none"}');
+    const rec = { status: "pending", registration: payload.registration, submittedAt: new Date().toISOString() };
+    localStorage.setItem("yec_demo", JSON.stringify(rec));
+    return { ok: true, ...rec };
+  }
+  // text/plain avoids a CORS preflight, which Apps Script web apps don't handle.
+  const res = await fetch(CONFIG.SUBMIT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Server error " + res.status);
+  return res.json();
+}
+
+function showStatus(rec) {
+  const s = (rec.status || "pending").toLowerCase();
+  const map = {
+    pending:  ["⏳", "Waiting for validation", "Pending",
+               "Thanks! Your registration was received. An admin will review it soon. You can reopen this page any time to check your status."],
+    approved: ["✅", "Registration approved", "Approved", "You're confirmed. See you at YEC!"],
+    rejected: ["❌", "Registration not approved", "Not approved",
+               rec.note ? rec.note : "Please contact the YEC team for details."],
+  };
+  const [icon, title, badge, text] = map[s] || map.pending;
+  $("status-icon").textContent = icon;
+  $("status-title").textContent = title;
+  $("status-badge").textContent = badge;
+  $("status-badge").className = "badge " + (map[s] ? s : "pending");
+  $("status-text").textContent = text;
+
+  const r = rec.registration;
+  if (r) {
+    const names = [r.person?.fullName, ...(r.members || []).map(m => m.fullName)].filter(Boolean);
+    $("status-summary").innerHTML =
+      `<div><b>Type:</b> ${r.type === "group" ? "Group" : "Individual"}${r.group?.groupName ? " · " + esc(r.group.groupName) : ""}</div>` +
+      `<div><b>${names.length > 1 ? "People" : "Name"}:</b> ${names.map(esc).join(", ")}</div>`;
+  }
+  show("status");
+}
+
+function closeApp() {
+  if (!DEMO && window.liff && liff.isInClient()) liff.closeWindow(); else window.close();
+}
+
+async function onSubmit(e) {
+  e.preventDefault();
+  $("form-error").classList.add("hidden");
+  if (!validate()) return;
+
+  const type = document.querySelector("input[name=type]:checked").value;
+  const registration = { type, person: collect($("main-fields")) };
+  if (type === "group") {
+    registration.group = collect($("group-fields"));
+    registration.members = [...$("members").children].map(collect);
+  }
+
+  const btn = $("submit-btn");
+  btn.disabled = true; btn.textContent = "Submitting…";
+  try {
+    const res = await api({
+      action: "register",
+      lineUserId: profile.userId,
+      lineDisplayName: profile.displayName,
+      idToken,
+      registration,
+    });
+    if (res.ok === false) throw new Error(res.error || "Submission failed");
+    showStatus({ status: res.status || "pending", registration });
+  } catch (err) {
+    $("form-error").textContent = "Could not submit: " + err.message + ". Please try again.";
+    $("form-error").classList.remove("hidden");
+  } finally {
+    btn.disabled = false; btn.textContent = "Submit registration";
+  }
+}
+
+async function init() {
+  // Build the form from FIELDS
+  $("main-fields").innerHTML = FIELDS.person.map(f => fieldHtml(f, "p_")).join("");
+  $("group-fields").innerHTML = FIELDS.group.map(f => fieldHtml(f, "g_")).join("");
+  document.querySelectorAll("input[name=type]").forEach(r => r.onchange = () => setType(r.value));
+  $("add-member").onclick = addMember;
+  $("reg-form").addEventListener("submit", onSubmit);
+  $("reg-form").addEventListener("input", e => e.target.classList.remove("invalid"));
+
+  try {
+    if (DEMO) {
+      $("demo-banner").classList.remove("hidden");
+      profile = { userId: "U_demo_user", displayName: "Demo User", pictureUrl: "" };
+    } else {
+      await liff.init({ liffId: CONFIG.LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
+      profile = await liff.getProfile();
+      idToken = liff.getIDToken(); // lets the backend verify the user with LINE
+    }
+    $("profile-name").textContent = profile.displayName;
+    if (profile.pictureUrl) $("profile-pic").src = profile.pictureUrl;
+
+    // Already registered? Show status instead of the form.
+    const rec = await api({ action: "status", lineUserId: profile.userId, idToken });
+    if (rec && rec.status && rec.status !== "none") showStatus(rec);
+    else show("form");
+  } catch (err) {
+    fail(err.message || String(err));
+  }
+}
+
+init();
+</script>
+</body>
+</html>
