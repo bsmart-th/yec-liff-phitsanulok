@@ -2,19 +2,15 @@
 
 `index.html` is the whole app: one static page, no build step. Opened without config it runs in **demo mode** (fake LINE user, nothing sent), so you can try it in any browser first.
 
-## 1. Host the page (free, auto-updates from this repo)
+## 1. Host the page on GitHub Pages (free)
 
-**Netlify (recommended, works with this private repo)**
-1. Sign in at https://app.netlify.com with your GitHub account.
-2. **Add new site → Import an existing project → GitHub**, allow access to `bsmart-th/yec-liff-phitsanulok`, and pick it.
-3. Leave the build command empty and set the publish directory to `/` (the repo root). Click **Deploy**.
-4. Copy the `https://….netlify.app` URL. You can rename the site under Site configuration.
+1. Make the repo public: **Settings → General → Danger Zone → Change visibility → Public**. Nothing in this repo is secret (the LIFF ID and Apps Script URL are public by design).
+2. **Settings → Pages → Build and deployment**: Source **Deploy from a branch**, branch **main**, folder **/ (root)**, then **Save**.
+3. After a minute the page is live at **https://bsmart-th.github.io/yec-liff-phitsanulok/**. Use this exact URL (with the trailing `/`) as the LIFF Endpoint URL in step 2.
 
-From then on, every change pushed to `main` goes live automatically.
+Every push to `main` redeploys automatically. Free Pages easily handles a few hundred registrations.
 
-**Or GitHub Pages** (only if the repo is made public, or the org is on a paid GitHub plan)
-1. Repo **Settings → Pages → Source: Deploy from a branch**, branch `main`, folder `/ (root)`.
-2. Your URL is `https://bsmart-th.github.io/yec-liff-phitsanulok/`.
+> If the repo has to stay private: either upgrade the bsmart-th org to a paid GitHub plan (then step 2 above works as is), or link the repo to Netlify instead (app.netlify.com → Import from GitHub, no build command, publish directory `/`).
 
 ## 2. Create the LINE Login channel and LIFF app
 
@@ -23,7 +19,7 @@ From then on, every change pushed to `main` goes live automatically.
 3. In the provider, create a new channel of type **LINE Login**. App type: **Web app**.
 4. Open the channel → **LIFF** tab → **Add**:
    - Size: **Full**
-   - Endpoint URL: the hosting URL from step 1
+   - Endpoint URL: `https://bsmart-th.github.io/yec-liff-phitsanulok/`
    - Scopes: tick **openid** and **profile**
    - Bot link feature: **On (Normal)** if you have a LINE Official Account and want to message users later; otherwise Off
 5. Copy the **LIFF ID** (looks like `2001234567-AbCdEfGh`).
@@ -41,7 +37,7 @@ const CONFIG = {
 };
 ```
 
-Commit and push to `main`; Netlify redeploys on its own. Share it as `https://liff.line.me/<LIFF_ID>`, e.g. in your LINE OA rich menu, a QR code, or a chat. Demo mode stays on until **both** values are set.
+Commit and push to `main`; GitHub Pages redeploys on its own. Share it as `https://liff.line.me/<LIFF_ID>`, e.g. in your LINE OA rich menu, a QR code, or a chat. Demo mode stays on until **both** values are set.
 
 ## 4. Changing the form fields
 
