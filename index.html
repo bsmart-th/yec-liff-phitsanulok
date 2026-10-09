@@ -4,48 +4,67 @@
 <meta charset="utf-8">
 <meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ลงทะเบียน YEC</title>
+<title>ลงทะเบียนงานสานสัมพันธ์ภาคเหนือ ครั้งที่ 20</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" charset="utf-8"></script>
 <style>
   :root {
     --bg: #f5f6f8; --card: #fff; --text: #1d2129; --muted: #6b7280;
     --line: #06c755; --line-dark: #05a647; --border: #d9dce1; --danger: #d93025;
     --warn-bg: #fff7e0; --warn: #8a6100; --ok-bg: #e6f8ee; --bad-bg: #fdecea;
+    --accent: #7b4fc9; --accent-bg: #f4effc;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--text);
     font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; }
   main { max-width: 560px; margin: 0 auto; padding: 16px 16px 40px; }
-  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h1 { font-size: 21px; line-height: 1.35; margin: 8px 0 4px; }
   h2 { font-size: 17px; margin: 0 0 12px; }
+  .tagline { color: var(--accent); font-weight: 700; margin: 0 0 12px; }
   .sub { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
   .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 14px;
     box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+  .intro p { margin: 0 0 10px; }
+  .intro ul { margin: 0 0 10px; padding-left: 20px; }
+  .intro .facts { margin: 0 0 10px; }
+  .section-title { color: var(--accent); border-bottom: 2px solid var(--accent-bg); padding-bottom: 8px; }
+  .section-intro { font-size: 14px; margin: 0 0 14px; }
+  .section-intro p { margin: 0 0 8px; }
   .profile { display: flex; align-items: center; gap: 12px; }
   .profile img { width: 44px; height: 44px; border-radius: 50%; background: #ddd; object-fit: cover; }
-  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .seg label { border: 2px solid var(--border); border-radius: 10px; padding: 12px; text-align: center;
-    cursor: pointer; font-weight: 600; }
-  .seg input { display: none; }
-  .seg input:checked + span { color: var(--line-dark); }
-  .seg label:has(input:checked) { border-color: var(--line); background: #f0fbf4; }
-  .field { margin-bottom: 12px; }
-  .field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .field { margin-bottom: 16px; }
+  .field > .label { display: block; font-size: 15px; font-weight: 600; margin-bottom: 4px; }
   .field .req { color: var(--danger); }
-  input[type=text], input[type=tel], input[type=email], select, textarea {
+  .help { color: var(--muted); font-size: 13px; margin: -2px 0 6px; }
+  input[type=text], input[type=tel], input[type=email], input[type=number], input[type=date],
+  input[type=time], select, textarea {
     width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
-    font: inherit; background: #fff; color: inherit; }
+    font: inherit; background: #fff; color: inherit; min-height: 44px; }
   input:focus, select:focus, textarea:focus { outline: 2px solid var(--line); border-color: transparent; }
-  .invalid { border-color: var(--danger) !important; }
-  .member { border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-  .member-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .link-btn { background: none; border: 0; color: var(--danger); font: inherit; font-size: 14px; cursor: pointer; padding: 4px; }
+  .choices { display: grid; gap: 8px; }
+  .choice { display: flex; align-items: flex-start; gap: 10px; border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; cursor: pointer; font-size: 15px; }
+  .choice input { margin: 4px 0 0; width: 18px; height: 18px; accent-color: var(--line); flex: none; }
+  .choice:has(input:checked) { border-color: var(--line); background: #f0fbf4; }
+  .choice small { display: block; color: var(--muted); font-size: 13px; }
+  .other-input { margin-top: 8px; }
+  .invalid, .choices.invalid .choice { border-color: var(--danger) !important; }
+  .file-box { border: 2px dashed var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .file-box input { width: 100%; font-size: 14px; }
+  .file-box.invalid { border-color: var(--danger); }
+  .file-name { font-size: 13px; color: var(--muted); margin-top: 6px; word-break: break-all; }
+  .file-preview { max-width: 100%; max-height: 220px; border-radius: 8px; margin-top: 8px; }
+  .total { background: var(--accent-bg); border-radius: 10px; padding: 12px; margin-bottom: 16px; }
+  .total b { font-size: 20px; color: var(--accent); }
+  table.prices { width: 100%; border-collapse: collapse; font-size: 14px; margin: 6px 0 10px; }
+  table.prices th, table.prices td { border-bottom: 1px solid var(--border); padding: 6px 4px; text-align: left; }
+  table.prices td.num, table.prices th.num { text-align: right; white-space: nowrap; }
+  .bank { background: #f8f9fb; border-radius: 10px; padding: 10px 12px; font-size: 14px; }
   .btn { display: block; width: 100%; padding: 14px; border: 0; border-radius: 10px; font: inherit;
     font-weight: 700; cursor: pointer; }
   .btn-primary { background: var(--line); color: #fff; }
   .btn-primary:disabled { opacity: .6; cursor: default; }
-  .btn-ghost { background: #fff; color: var(--line-dark); border: 2px dashed var(--line); }
   .error { color: var(--danger); font-size: 14px; margin: 8px 0 0; }
+  .field-error { color: var(--danger); font-size: 13px; margin-top: 4px; }
   .hidden { display: none !important; }
   .center { text-align: center; }
   .badge { display: inline-block; padding: 6px 14px; border-radius: 999px; font-weight: 700; margin: 8px 0; }
@@ -53,6 +72,7 @@
   .badge.approved { background: var(--ok-bg); color: var(--line-dark); }
   .badge.rejected { background: var(--bad-bg); color: var(--danger); }
   .icon { font-size: 48px; line-height: 1; margin-top: 8px; }
+  #status-text { white-space: pre-line; }
   .summary { text-align: left; font-size: 14px; color: var(--muted); margin-top: 12px; }
   .demo { background: var(--warn-bg); color: var(--warn); font-size: 13px; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; }
 </style>
@@ -74,8 +94,9 @@
 
   <!-- Form -->
   <section id="view-form" class="hidden">
-    <h1>ลงทะเบียน YEC</h1>
-    <p class="sub">ลงทะเบียนแบบบุคคลหรือแบบกลุ่ม ผู้ดูแลจะตรวจสอบการลงทะเบียนของคุณ</p>
+    <h1 id="event-title"></h1>
+    <p id="event-tagline" class="tagline"></p>
+    <div id="event-intro" class="card intro"></div>
 
     <div class="card profile">
       <img id="profile-pic" alt="">
@@ -83,28 +104,7 @@
     </div>
 
     <form id="reg-form" novalidate>
-      <div class="card">
-        <h2>ประเภทการลงทะเบียน</h2>
-        <div class="seg">
-          <label><input type="radio" name="type" value="individual" checked><span>บุคคล</span></label>
-          <label><input type="radio" name="type" value="group"><span>กลุ่ม</span></label>
-        </div>
-      </div>
-
-      <!-- Placeholder fields: replace with the real YEC form later (see FIELDS below). -->
-      <div class="card">
-        <h2 id="main-title">ข้อมูลของคุณ</h2>
-        <div id="main-fields"></div>
-      </div>
-
-      <div id="group-block" class="card hidden">
-        <h2>ข้อมูลกลุ่ม</h2>
-        <div id="group-fields"></div>
-        <h2 style="margin-top:8px">สมาชิก</h2>
-        <div id="members"></div>
-        <button type="button" id="add-member" class="btn btn-ghost">+ เพิ่มสมาชิก</button>
-      </div>
-
+      <div id="sections"></div>
       <button type="submit" id="submit-btn" class="btn btn-primary">ส่งการลงทะเบียน</button>
       <p id="form-error" class="error hidden"></p>
     </form>
@@ -113,9 +113,9 @@
   <!-- Status (shown after submit, and whenever a registered user reopens the page) -->
   <section id="view-status" class="card center hidden">
     <div id="status-icon" class="icon">⏳</div>
-    <h2 id="status-title">รอการตรวจสอบ</h2>
-    <span id="status-badge" class="badge pending">รอตรวจสอบ</span>
-    <p id="status-text" class="sub">ขอบคุณ! เราได้รับการลงทะเบียนของคุณแล้ว ผู้ดูแลจะตรวจสอบเร็ว ๆ นี้ คุณสามารถเปิดหน้านี้อีกครั้งเพื่อตรวจสอบสถานะได้ทุกเมื่อ</p>
+    <h2 id="status-title"></h2>
+    <span id="status-badge" class="badge pending"></span>
+    <p id="status-text" class="sub"></p>
     <div id="status-summary" class="summary"></div>
     <button class="btn btn-primary" onclick="closeApp()" style="margin-top:12px">ปิด</button>
   </section>
@@ -125,115 +125,324 @@
 /* ================== CONFIG: edit these two values ================== */
 const CONFIG = {
   // From LINE Developers console > your LINE Login channel > LIFF tab, e.g. "2001234567-AbCdEfGh"
-  LIFF_ID: "",
-  // Google Apps Script web app URL (step 2), e.g. "https://script.google.com/macros/s/XXXX/exec"
+  LIFF_ID: "2011950249-ekguOCPn",
+  // Google Apps Script web app URL (README section 5), e.g. "https://script.google.com/macros/s/XXXX/exec"
   SUBMIT_URL: "",
-  // Max members allowed in a group (excluding the contact person)
-  MAX_MEMBERS: 20,
 };
 
-/* ============ PLACEHOLDER FIELDS: swap for the real YEC form ============
-   type: text | tel | email | select | textarea ; options for select ; required true/false */
-const FIELDS = {
-  // Individual registrant, or the group's contact person
-  person: [
-    { key: "fullName",  label: "ชื่อ-นามสกุล",       type: "text",  required: true },
-    { key: "nickname",  label: "ชื่อเล่น",        type: "text",  required: false },
-    { key: "phone",     label: "เบอร์โทรศัพท์",           type: "tel",   required: true, pattern: "^[0-9+\\-\\s]{9,15}$" },
-    { key: "email",     label: "อีเมล",           type: "email", required: false },
-    { key: "company",   label: "บริษัท / หน่วยงาน", type: "text", required: false },
-    { key: "province",  label: "จังหวัด",        type: "text",  required: false },
+/* ============ EVENT DETAILS: prices, bank account, wording ============
+   Prices here drive the price list, the rate choices, the payment table
+   and the "amount to pay" box, so change them only here. */
+const EVENT = {
+  title: "ลงทะเบียนงานสานสัมพันธ์ภาคเหนือ ครั้งที่ 20",
+  tagline: "“พิษณุโลก พิษณุเริ่ส” มูแบบคนเริ่สๆ ✨",
+  rates: [
+    // note: conditions or dates for this rate, shown under the choice (e.g. "ลงทะเบียนภายใน 30 พ.ย. 2569")
+    { name: "ราคากลุ่ม",       amount: 4000, note: "[ระบุเงื่อนไขราคากลุ่ม]" },
+    { name: "ราคาพิเศษสุด ๆ",   amount: 4500, note: "[ระบุช่วงเวลา]" },
+    { name: "ราคา Early Bird", amount: 4900, note: "[ระบุช่วงเวลา]" },
+    { name: "ราคาเต็ม",        amount: 5500, note: "" },
   ],
-  // Group-level fields
-  group: [
-    { key: "groupName", label: "ชื่อกลุ่ม / ทีม", type: "text", required: true },
-  ],
-  // Each additional group member
-  member: [
-    { key: "fullName",  label: "ชื่อ-นามสกุล", type: "text", required: true },
-    { key: "phone",     label: "เบอร์โทรศัพท์",     type: "tel",  required: false, pattern: "^[0-9+\\-\\s]{9,15}$" },
-    { key: "email",     label: "อีเมล",     type: "email", required: false },
-  ],
+  singleRoomExtra: 1200,
+  bank: { bank: "[ระบุธนาคาร]", number: "[ระบุเลขที่บัญชี]", name: "[ระบุชื่อบัญชี]" },
+  // Shown after submitting, while the registration is waiting for the team to check it
+  thankYou: "ได้รับข้อมูลการลงทะเบียนแล้วค่ะ 💜\n\nทีมงานจะตรวจสอบข้อมูลและหลักฐานการชำระเงิน หากต้องการข้อมูลเพิ่มเติมจะติดต่อกลับตามช่องทางที่แจ้งไว้\n\nแล้วพบกันที่ “พิษณุโลก พิษณุเริ่ส”\nงานสานสัมพันธ์ภาคเหนือ ครั้งที่ 20\n22–24 มกราคม 2570 ✨",
 };
+
+const baht = n => Number(n).toLocaleString("en-US") + " บาท";
+const rateLabel = r => `${r.name} ${baht(r.amount)} / ท่าน`;
+
+function introHtml() {
+  return `
+    <p>ชวนเพื่อน ๆ YEC ทั่วประเทศ มาสานสัมพันธ์ เปิดประสบการณ์เที่ยวเมืองสองแคว และสนุกด้วยกันตลอด 3 วัน 2 คืน 💜</p>
+    <div class="facts">📅 วันที่ 22–24 มกราคม 2570<br>📍 จังหวัดพิษณุโลก<br>🏨 พักที่โรงแรมท็อปแลนด์ (Topland)</div>
+    <p><b>ค่าลงทะเบียนต่อท่าน รวมที่พักและกิจกรรม 3 วัน 2 คืน</b></p>
+    <ul>${EVENT.rates.map(r => `<li>${esc(r.name)} ${baht(r.amount)}</li>`).join("")}</ul>
+    <p>🛏 กรณีพักเดี่ยว เพิ่ม ${baht(EVENT.singleRoomExtra)} สำหรับ 2 คืน</p>
+    <p style="margin:0">กรุณาลงทะเบียน 1 ท่านต่อ 1 คำตอบ และตรวจสอบข้อมูลให้ครบถ้วนก่อนส่งค่ะ</p>`;
+}
+
+function paymentIntroHtml() {
+  const b = EVENT.bank;
+  return `
+    <p>กรุณาตรวจสอบยอดชำระตามอัตราค่าลงทะเบียนและรูปแบบการเข้าพักที่เลือก</p>
+    <table class="prices"><tr><th>อัตรา</th><th class="num">พักร่วม</th><th class="num">พักเดี่ยว</th></tr>
+      ${EVENT.rates.map(r => `<tr><td>${esc(r.name)}</td><td class="num">${baht(r.amount)}</td>
+        <td class="num">${baht(r.amount + EVENT.singleRoomExtra)}</td></tr>`).join("")}</table>
+    <div class="bank"><b>รายละเอียดบัญชีสำหรับชำระเงิน</b><br>
+      ธนาคาร: ${esc(b.bank)}<br>เลขที่บัญชี: ${esc(b.number)}<br>ชื่อบัญชี: ${esc(b.name)}</div>`;
+}
+
+/* ============================ FORM QUESTIONS ============================
+   col: the column name in the Google Sheet.
+   type: text | tel | email | number | date | time | textarea | radio | confirm | file
+   radio options: { label, value?, note?, other? }  (other: true shows a "please specify" box) */
+const SECTIONS = [
+  { title: "ส่วนที่ 1 ข้อมูลผู้เข้าร่วม", fields: [
+    { key: "fullName", col: "ชื่อ–นามสกุล", label: "ชื่อ–นามสกุล", type: "text", required: true },
+    { key: "nickname", col: "ชื่อเล่น", label: "ชื่อเล่น", type: "text", required: true },
+    { key: "org", col: "หน่วยงานที่สังกัด", label: "YEC / หอการค้า / หน่วยงานที่สังกัด", type: "text", required: true },
+    { key: "province", col: "จังหวัดที่สังกัด", label: "จังหวัดที่สังกัด", type: "text", required: true },
+    { key: "position", col: "ตำแหน่ง", label: "ตำแหน่งในองค์กรหรือเครือข่าย", type: "text", required: false },
+    { key: "phone", col: "เบอร์โทรศัพท์", label: "เบอร์โทรศัพท์ที่ติดต่อได้", type: "tel", required: true, pattern: "^[0-9+\\-\\s]{9,15}$" },
+    { key: "lineId", col: "LINE ID", label: "LINE ID", type: "text", required: true,
+      help: "หากไม่มี LINE ID กรุณาระบุเบอร์โทรศัพท์ที่ใช้เพิ่มเพื่อน" },
+    { key: "email", col: "อีเมล", label: "อีเมล", type: "email", required: false },
+  ]},
+  { title: "ส่วนที่ 2 แพ็กเกจและที่พัก", fields: [
+    { key: "rate", col: "อัตราค่าลงทะเบียน", label: "กรุณาเลือกอัตราค่าลงทะเบียน", type: "radio", required: true,
+      help: "ทุกอัตรารวมที่พักโรงแรมท็อปแลนด์และกิจกรรม 3 วัน 2 คืน",
+      options: () => EVENT.rates.map(r => ({ label: rateLabel(r), note: r.note, amount: r.amount })) },
+    { key: "room", col: "รูปแบบการเข้าพัก", label: "รูปแบบการเข้าพัก", type: "radio", required: true,
+      options: () => [
+        { label: "พักร่วมกับผู้เข้าร่วมท่านอื่น", value: "พักร่วม", extra: 0 },
+        { label: `พักเดี่ยว เพิ่ม ${baht(EVENT.singleRoomExtra)} สำหรับ 2 คืน`, value: "พักเดี่ยว", extra: EVENT.singleRoomExtra },
+      ] },
+    { key: "roommate", col: "ผู้ที่ต้องการพักด้วย", label: "ชื่อ–นามสกุลผู้ที่ต้องการพักด้วย", type: "text", required: false,
+      help: "สำหรับผู้เลือกพักร่วม หากยังไม่มีผู้พักด้วย กรุณาระบุ “ให้ทีมงานจัดให้” โดยผู้พักด้วยต้องลงทะเบียนแยกอีก 1 คำตอบ",
+      showIf: v => v.room !== "พักเดี่ยว" },
+  ]},
+  { title: "ส่วนที่ 3 กิจกรรมเพิ่มเติม", fields: [
+    { key: "almsGiving", col: "ตักบาตร 23 ม.ค.", label: "สนใจร่วมกิจกรรมตักบาตรหน้าโบสถ์วัดใหญ่หรือไม่?", type: "radio", required: true,
+      help: "📅 วันที่ 23 มกราคม 2570 · ⏰ ออกจากโรงแรมท็อปแลนด์ เวลา 05.30 น.",
+      options: () => [{ label: "ไป" }, { label: "ไม่ไป" }] },
+    { key: "morningRun", col: "วิ่งตอนเช้า 23 ม.ค.", label: "สนใจร่วมกิจกรรมวิ่งตอนเช้าหรือไม่?", type: "radio", required: true,
+      help: "📅 วันที่ 23 มกราคม 2570 · ⏰ เวลา 06.30–07.30 น.",
+      options: () => [{ label: "ไป" }, { label: "ไม่ไป" }] },
+  ]},
+  { title: "ส่วนที่ 4 อาหารและข้อมูลสำหรับการดูแล", fields: [
+    { key: "diet", col: "ความต้องการด้านอาหาร", label: "ความต้องการด้านอาหาร", type: "radio", required: true,
+      options: () => [{ label: "อาหารทั่วไป" }, { label: "อาหารฮาลาล" }, { label: "อาหารมังสวิรัติ" },
+                      { label: "อาหารเจ" }, { label: "อื่น ๆ โปรดระบุ", value: "อื่น ๆ", other: true }] },
+    { key: "allergy", col: "อาหารที่แพ้", label: "อาหารหรือวัตถุดิบที่แพ้", type: "text", required: true,
+      help: "หากไม่มี กรุณาระบุ “ไม่มี”" },
+    { key: "care", col: "ข้อมูลสำหรับการดูแล", label: "ข้อมูลที่ต้องการแจ้งเพื่อให้ทีมงานช่วยดูแลระหว่างกิจกรรม", type: "textarea", required: false,
+      help: "แจ้งเฉพาะข้อมูลที่จำเป็น เช่น ข้อจำกัดในการเดินทางหรือการร่วมกิจกรรม" },
+  ]},
+  { title: "ส่วนที่ 5 การชำระเงิน", intro: paymentIntroHtml, total: true, fields: [
+    { key: "amountPaid", col: "ยอดเงินที่โอน", label: "ยอดเงินที่โอนทั้งหมด (บาท)", type: "number", required: true },
+    { key: "paidDate", col: "วันที่โอน", label: "วันที่โอนเงิน", type: "date", required: true },
+    { key: "paidTime", col: "เวลาโอน", label: "เวลาโอนเงินตามสลิป", type: "time", required: true },
+    { key: "slip", label: "แนบหลักฐานการโอนเงิน", type: "file", required: true,
+      help: "รูปภาพสลิป หรือไฟล์ PDF" },
+    { key: "remark", col: "หมายเหตุ", label: "หมายเหตุเพิ่มเติม", type: "textarea", required: false,
+      help: "หากโอนรวมหลายท่าน กรุณาระบุชื่อผู้เข้าร่วมทั้งหมดและยอดชำระของแต่ละท่าน โดยแต่ละท่านยังต้องกรอกฟอร์มแยกกัน" },
+  ]},
+  { title: "ส่วนที่ 6 ยืนยันข้อมูล",
+    intro: () => `<p><b>คำชี้แจงการใช้ข้อมูล</b></p><p>ข้อมูลในแบบฟอร์มนี้ใช้สำหรับลงทะเบียน จัดที่พัก จัดอาหาร ประสานงานกิจกรรม และติดต่อเกี่ยวกับงาน โดยข้อมูลสำหรับการดูแลจะใช้เฉพาะเท่าที่จำเป็นในการจัดกิจกรรม</p>`,
+    fields: [
+    { key: "confirm", col: "ยืนยันข้อมูล", label: "ยืนยันการลงทะเบียน", type: "confirm", required: true,
+      text: "ข้าพเจ้าได้ตรวจสอบข้อมูลและยอดชำระแล้ว และรับทราบว่าทีมงานจะตรวจสอบข้อมูลกับหลักฐานการชำระเงินเพื่อยืนยันการลงทะเบียน" },
+  ]},
+];
+const ALL_FIELDS = SECTIONS.flatMap(s => s.fields);
+const SLIP_MAX_PDF_BYTES = 5 * 1024 * 1024;
 /* ======================================================================= */
 
 const DEMO = !CONFIG.LIFF_ID || !CONFIG.SUBMIT_URL;
-let profile = null, idToken = null, memberSeq = 0;
+let profile = null, idToken = null, slip = null, amountTouched = false;
 const $ = (id) => document.getElementById(id);
 
 function show(view) {
   ["loading", "error", "form", "status"].forEach(v => $("view-" + v).classList.toggle("hidden", v !== view));
+  window.scrollTo(0, 0);
 }
 function fail(msg) { $("error-text").textContent = msg; show("error"); }
 function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
 
-function fieldHtml(f, prefix) {
-  const id = prefix + f.key;
+/* ---------------------------- Rendering ---------------------------- */
+
+function fieldHtml(f) {
+  const id = "f_" + f.key;
   const req = f.required ? ' <span class="req">*</span>' : "";
+  const help = f.help ? `<div class="help">${esc(f.help)}</div>` : "";
   let input;
-  if (f.type === "select") {
-    input = `<select id="${id}" data-key="${f.key}" ${f.required ? "required" : ""}><option value="">เลือก…</option>` +
-      (f.options || []).map(o => `<option>${esc(o)}</option>`).join("") + `</select>`;
+  if (f.type === "radio") {
+    input = `<div class="choices" id="${id}">` + f.options().map((o, i) => `
+      <label class="choice"><input type="radio" name="${f.key}" value="${esc(o.value ?? o.label)}" data-i="${i}" ${f.required ? "required" : ""}>
+        <span>${esc(o.label)}${o.note ? `<small>${esc(o.note)}</small>` : ""}</span></label>`).join("") +
+      `</div>` + (f.options().some(o => o.other)
+        ? `<input type="text" id="${id}_other" class="other-input hidden" placeholder="โปรดระบุ">` : "");
+  } else if (f.type === "confirm") {
+    input = `<label class="choice" id="${id}_box"><input type="checkbox" id="${id}" ${f.required ? "required" : ""}><span>${esc(f.text)}</span></label>`;
+  } else if (f.type === "file") {
+    input = `<div class="file-box" id="${id}_box"><input type="file" id="${id}" accept="image/*,application/pdf">
+      <div id="${id}_name" class="file-name"></div><img id="${id}_preview" class="file-preview hidden" alt=""></div>`;
   } else if (f.type === "textarea") {
-    input = `<textarea id="${id}" data-key="${f.key}" rows="3" ${f.required ? "required" : ""}></textarea>`;
+    input = `<textarea id="${id}" rows="3" ${f.required ? "required" : ""}></textarea>`;
   } else {
-    input = `<input id="${id}" data-key="${f.key}" type="${f.type}" ${f.required ? "required" : ""} ${f.pattern ? `pattern="${f.pattern}"` : ""}>`;
+    const extra = f.type === "number" ? 'inputmode="decimal" min="0" step="any"' : f.type === "tel" ? 'inputmode="tel"' : "";
+    input = `<input id="${id}" type="${f.type}" ${extra} ${f.required ? "required" : ""} ${f.pattern ? `pattern="${f.pattern}"` : ""}>`;
   }
-  return `<div class="field"><label for="${id}">${esc(f.label)}${req}</label>${input}</div>`;
+  return `<div class="field" id="${id}_field"><span class="label">${esc(f.label)}${req}</span>${help}${input}
+    <div class="field-error hidden" id="${id}_err"></div></div>`;
 }
 
-function collect(container) {
-  const out = {};
-  container.querySelectorAll("[data-key]").forEach(el => { out[el.dataset.key] = el.value.trim(); });
-  return out;
+function renderForm() {
+  $("event-title").textContent = EVENT.title;
+  $("event-tagline").textContent = EVENT.tagline;
+  $("event-intro").innerHTML = introHtml();
+  $("sections").innerHTML = SECTIONS.map(s => `
+    <div class="card"><h2 class="section-title">${esc(s.title)}</h2>
+      ${s.intro ? `<div class="section-intro">${s.intro()}</div>` : ""}
+      ${s.total ? `<div class="total" id="total-box">ยอดที่ต้องชำระของคุณ: <b id="total-amount">–</b>
+        <div class="help" id="total-detail" style="margin:2px 0 0">เลือกอัตราค่าลงทะเบียนและรูปแบบการเข้าพักในส่วนที่ 2</div></div>` : ""}
+      ${s.fields.map(fieldHtml).join("")}</div>`).join("");
 }
 
-function addMember() {
-  const count = $("members").children.length;
-  if (count >= CONFIG.MAX_MEMBERS) return;
-  const n = ++memberSeq;
-  const div = document.createElement("div");
-  div.className = "member";
-  div.innerHTML = `<div class="member-head"><strong class="m-title"></strong>
-    <button type="button" class="link-btn">ลบ</button></div>` +
-    FIELDS.member.map(f => fieldHtml(f, `m${n}_`)).join("");
-  div.querySelector(".link-btn").onclick = () => { div.remove(); renumber(); };
-  $("members").appendChild(div);
-  renumber();
-}
-function renumber() {
-  const items = [...$("members").children];
-  items.forEach((m, i) => m.querySelector(".m-title").textContent = `สมาชิกคนที่ ${i + 1}`);
-  $("add-member").classList.toggle("hidden", items.length >= CONFIG.MAX_MEMBERS);
+/* ------------------------- Values & totals ------------------------- */
+
+function radioChoice(f) {
+  const el = document.querySelector(`input[name="${f.key}"]:checked`);
+  return el ? f.options()[+el.dataset.i] : null;
 }
 
-function setType(type) {
-  const isGroup = type === "group";
-  $("group-block").classList.toggle("hidden", !isGroup);
-  $("main-title").textContent = isGroup ? "ผู้ประสานงาน (คุณ)" : "ข้อมูลของคุณ";
-  if (isGroup && $("members").children.length === 0) addMember();
+function values() {
+  const v = {};
+  ALL_FIELDS.forEach(f => {
+    if (f.type === "radio") {
+      const o = radioChoice(f);
+      if (!o) { v[f.key] = ""; return; }
+      const val = o.value ?? o.label;
+      v[f.key] = o.other ? `${val}: ${$(`f_${f.key}_other`).value.trim()}` : val;
+    } else if (f.type === "confirm") {
+      v[f.key] = $("f_" + f.key).checked ? "ยืนยันแล้ว" : "";
+    } else if (f.type !== "file") {
+      v[f.key] = $("f_" + f.key).value.trim();
+    }
+  });
+  return v;
+}
+
+function expectedTotal() {
+  const rate = radioChoice(ALL_FIELDS.find(f => f.key === "rate"));
+  const room = radioChoice(ALL_FIELDS.find(f => f.key === "room"));
+  if (!rate || !room) return null;
+  return { total: rate.amount + room.extra, rate, room };
+}
+
+function refresh() {
+  const v = values();
+  // Conditional fields
+  ALL_FIELDS.filter(f => f.showIf).forEach(f => {
+    const on = f.showIf(v);
+    $(`f_${f.key}_field`).classList.toggle("hidden", !on);
+    if (!on) $("f_" + f.key).value = "";
+  });
+  // "Other, please specify" boxes
+  ALL_FIELDS.filter(f => f.type === "radio").forEach(f => {
+    const other = $(`f_${f.key}_other`);
+    if (other) other.classList.toggle("hidden", !radioChoice(f)?.other);
+  });
+  // Amount to pay
+  const t = expectedTotal();
+  $("total-amount").textContent = t ? baht(t.total) : "–";
+  $("total-detail").textContent = t
+    ? `${t.rate.label}${t.room.extra ? ` + พักเดี่ยว ${baht(t.room.extra)}` : " (พักร่วม)"}`
+    : "เลือกอัตราค่าลงทะเบียนและรูปแบบการเข้าพักในส่วนที่ 2";
+  if (t && !amountTouched) { $("f_amountPaid").value = t.total; clearFieldError($("f_amountPaid")); }
+}
+
+/* ------------------------------ Slip ------------------------------ */
+
+function readAsDataUrl(blob) {
+  return new Promise((ok, bad) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = bad; r.readAsDataURL(blob); });
+}
+
+// Phone photos are several MB; shrink to a readable size so the upload is quick.
+async function shrinkImage(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = url; });
+    const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", 0.85);
+  } finally { URL.revokeObjectURL(url); }
+}
+
+async function onSlipChange(e) {
+  const file = e.target.files[0];
+  slip = null;
+  $("f_slip_name").textContent = "";
+  $("f_slip_preview").classList.add("hidden");
+  setFieldError("slip", "");
+  if (!file) return;
+  try {
+    let dataUrl, mimeType, name = file.name || "slip";
+    if (file.type === "application/pdf") {
+      if (file.size > SLIP_MAX_PDF_BYTES) throw new Error("ไฟล์ PDF ต้องมีขนาดไม่เกิน 5 MB");
+      dataUrl = await readAsDataUrl(file); mimeType = file.type;
+    } else if (file.type.startsWith("image/")) {
+      dataUrl = await shrinkImage(file); mimeType = "image/jpeg";
+      name = name.replace(/\.[^.]+$/, "") + ".jpg";
+      $("f_slip_preview").src = dataUrl;
+      $("f_slip_preview").classList.remove("hidden");
+    } else {
+      throw new Error("กรุณาแนบไฟล์รูปภาพหรือ PDF");
+    }
+    slip = { name, mimeType, data: dataUrl.split(",")[1] };
+    $("f_slip_name").textContent = "✓ " + file.name;
+    clearFieldError(e.target);
+  } catch (err) {
+    e.target.value = "";
+    setFieldError("slip", err.message || "อ่านไฟล์ไม่สำเร็จ กรุณาลองไฟล์อื่น");
+  }
+}
+
+/* ---------------------------- Validation ---------------------------- */
+
+function clearFieldError(el) {
+  const field = el.closest(".field");
+  field.querySelectorAll(".invalid").forEach(x => x.classList.remove("invalid"));
+  field.querySelector(".field-error").classList.add("hidden");
+}
+
+function setFieldError(key, msg) {
+  const el = $(`f_${key}_err`);
+  el.textContent = msg; el.classList.toggle("hidden", !msg);
 }
 
 function validate() {
-  const type = document.querySelector("input[name=type]:checked").value;
-  const scope = type === "group" ? $("reg-form") : $("main-fields");
-  let firstBad = null;
-  scope.querySelectorAll("[data-key]").forEach(el => {
-    const bad = !el.checkValidity();
-    el.classList.toggle("invalid", bad);
-    if (bad && !firstBad) firstBad = el;
+  let first = null;
+  ALL_FIELDS.forEach(f => {
+    const field = $(`f_${f.key}_field`);
+    if (field.classList.contains("hidden")) return;
+    let bad = false, target = $("f_" + f.key);
+    if (f.type === "radio") {
+      const o = radioChoice(f);
+      bad = f.required && !o;
+      const other = $(`f_${f.key}_other`);
+      if (o?.other && !other.value.trim()) { bad = true; other.classList.add("invalid"); }
+      target.classList.toggle("invalid", f.required && !o);
+    } else if (f.type === "confirm") {
+      bad = f.required && !target.checked;
+      $(`f_${f.key}_box`).classList.toggle("invalid", bad);
+    } else if (f.type === "file") {
+      bad = f.required && !slip;
+      $(`f_${f.key}_box`).classList.toggle("invalid", bad);
+    } else {
+      bad = !target.checkValidity();
+      target.classList.toggle("invalid", bad);
+    }
+    if (f.type !== "file" || !slip) setFieldError(f.key, bad ? "กรุณากรอกข้อมูลให้ถูกต้อง" : "");
+    if (bad && !first) first = field;
   });
-  if (firstBad) { firstBad.focus(); firstBad.scrollIntoView({ block: "center" }); }
-  return !firstBad;
+  if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+  return !first;
 }
+
+/* ------------------------------ Backend ------------------------------ */
 
 async function api(payload) {
   if (DEMO) {
     await new Promise(r => setTimeout(r, 500));
     if (payload.action === "status") return JSON.parse(localStorage.getItem("yec_demo") || '{"status":"none"}');
-    const rec = { status: "pending", registration: payload.registration, submittedAt: new Date().toISOString() };
+    const { slip: _, ...registration } = payload.registration; // too big for localStorage
+    const rec = { status: "pending", registration };
     localStorage.setItem("yec_demo", JSON.stringify(rec));
-    return { ok: true, ...rec };
+    return { ok: true, status: "pending" };
   }
   // text/plain avoids a CORS preflight, which Apps Script web apps don't handle.
   const res = await fetch(CONFIG.SUBMIT_URL, {
@@ -248,11 +457,11 @@ async function api(payload) {
 function showStatus(rec) {
   const s = (rec.status || "pending").toLowerCase();
   const map = {
-    pending:  ["⏳", "รอการตรวจสอบ", "รอตรวจสอบ",
-               "ขอบคุณ! เราได้รับการลงทะเบียนของคุณแล้ว ผู้ดูแลจะตรวจสอบเร็ว ๆ นี้ คุณสามารถเปิดหน้านี้อีกครั้งเพื่อตรวจสอบสถานะได้ทุกเมื่อ"],
-    approved: ["✅", "การลงทะเบียนได้รับการอนุมัติ", "อนุมัติแล้ว", "ยืนยันเรียบร้อย แล้วพบกันที่งาน YEC!"],
-    rejected: ["❌", "การลงทะเบียนไม่ได้รับการอนุมัติ", "ไม่อนุมัติ",
-               rec.note ? rec.note : "กรุณาติดต่อทีมงาน YEC เพื่อสอบถามรายละเอียด"],
+    pending:  ["💜", "ได้รับข้อมูลแล้ว รอการตรวจสอบ", "รอตรวจสอบ", EVENT.thankYou],
+    approved: ["✅", "การลงทะเบียนได้รับการยืนยันแล้ว", "ยืนยันแล้ว",
+               "ทีมงานตรวจสอบข้อมูลและการชำระเงินเรียบร้อยแล้ว\nแล้วพบกันที่ “พิษณุโลก พิษณุเริ่ส” 22–24 มกราคม 2570 ✨"],
+    rejected: ["❌", "การลงทะเบียนยังไม่ได้รับการยืนยัน", "ไม่ผ่านการตรวจสอบ",
+               rec.note ? rec.note : "กรุณาติดต่อทีมงานเพื่อสอบถามรายละเอียด"],
   };
   const [icon, title, badge, text] = map[s] || map.pending;
   $("status-icon").textContent = icon;
@@ -261,12 +470,13 @@ function showStatus(rec) {
   $("status-badge").className = "badge " + (map[s] ? s : "pending");
   $("status-text").textContent = text;
 
-  const r = rec.registration;
-  if (r) {
-    const names = [r.person?.fullName, ...(r.members || []).map(m => m.fullName)].filter(Boolean);
+  const p = rec.registration?.person;
+  if (p) {
+    const get = key => p[ALL_FIELDS.find(f => f.key === key).col] || "";
     $("status-summary").innerHTML =
-      `<div><b>ประเภท:</b> ${r.type === "group" ? "กลุ่ม" : "บุคคล"}${r.group?.groupName ? " · " + esc(r.group.groupName) : ""}</div>` +
-      `<div><b>${names.length > 1 ? "รายชื่อ" : "ชื่อ"}:</b> ${names.map(esc).join(", ")}</div>`;
+      `<div><b>ชื่อ:</b> ${esc(get("fullName"))}${get("nickname") ? ` (${esc(get("nickname"))})` : ""}</div>` +
+      `<div><b>อัตรา:</b> ${esc(get("rate"))} · ${esc(get("room"))}</div>` +
+      `<div><b>ยอดโอน:</b> ${esc(get("amountPaid"))} บาท</div>`;
   }
   show("status");
 }
@@ -280,22 +490,24 @@ async function onSubmit(e) {
   $("form-error").classList.add("hidden");
   if (!validate()) return;
 
-  const type = document.querySelector("input[name=type]:checked").value;
-  const registration = { type, person: collect($("main-fields")) };
-  if (type === "group") {
-    registration.group = collect($("group-fields"));
-    registration.members = [...$("members").children].map(collect);
-  }
+  // Answers keyed by their Google Sheet column name.
+  const v = values(), person = {};
+  const t = expectedTotal();
+  ALL_FIELDS.forEach(f => {
+    if (f.col) person[f.col] = v[f.key];
+    if (f.key === "roommate") person["ยอดที่ต้องชำระ"] = t ? t.total : "";
+  });
+  const registration = { type: "individual", person };
 
   const btn = $("submit-btn");
-  btn.disabled = true; btn.textContent = "กำลังส่ง…";
+  btn.disabled = true; btn.textContent = "กำลังส่ง… (อาจใช้เวลาสักครู่)";
   try {
     const res = await api({
       action: "register",
       lineUserId: profile.userId,
       lineDisplayName: profile.displayName,
       idToken,
-      registration,
+      registration: Object.assign({ slip }, registration),
     });
     if (res.ok === false) throw new Error(res.error || "ส่งข้อมูลไม่สำเร็จ");
     showStatus({ status: res.status || "pending", registration });
@@ -308,13 +520,18 @@ async function onSubmit(e) {
 }
 
 async function init() {
-  // Build the form from FIELDS
-  $("main-fields").innerHTML = FIELDS.person.map(f => fieldHtml(f, "p_")).join("");
-  $("group-fields").innerHTML = FIELDS.group.map(f => fieldHtml(f, "g_")).join("");
-  document.querySelectorAll("input[name=type]").forEach(r => r.onchange = () => setType(r.value));
-  $("add-member").onclick = addMember;
+  renderForm();
   $("reg-form").addEventListener("submit", onSubmit);
-  $("reg-form").addEventListener("input", e => e.target.classList.remove("invalid"));
+  $("reg-form").addEventListener("change", e => {
+    if (e.target.closest(".field") && e.target.type !== "file") clearFieldError(e.target);
+    refresh();
+  });
+  $("reg-form").addEventListener("input", e => {
+    if (e.target.closest(".field")) clearFieldError(e.target);
+    if (e.target.id === "f_amountPaid") amountTouched = e.target.value !== "";
+  });
+  $("f_slip").addEventListener("change", onSlipChange);
+  refresh();
 
   try {
     if (DEMO) {
@@ -331,6 +548,7 @@ async function init() {
 
     // Already registered? Show status instead of the form.
     const rec = await api({ action: "status", lineUserId: profile.userId, idToken });
+    if (rec && rec.ok === false) throw new Error(rec.error || "โหลดสถานะการลงทะเบียนไม่สำเร็จ");
     if (rec && rec.status && rec.status !== "none") showStatus(rec);
     else show("form");
   } catch (err) {
