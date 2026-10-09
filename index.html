@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="th">
+<html lang="th" translate="no">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>YEC Registration</title>
+<title>ลงทะเบียน YEC</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" charset="utf-8"></script>
 <style>
   :root {
@@ -58,53 +59,53 @@
 </head>
 <body>
 <main>
-  <div id="demo-banner" class="demo hidden">Demo mode: LIFF ID or submit URL is not set, so nothing is really sent.</div>
+  <div id="demo-banner" class="demo hidden">โหมดทดลอง: ยังไม่ได้ตั้งค่า LIFF ID หรือ URL สำหรับส่งข้อมูล ข้อมูลจะยังไม่ถูกส่งจริง</div>
 
   <!-- Loading -->
-  <section id="view-loading" class="card center"><p>Loading…</p></section>
+  <section id="view-loading" class="card center"><p>กำลังโหลด…</p></section>
 
   <!-- Error -->
   <section id="view-error" class="card center hidden">
     <div class="icon">⚠️</div>
-    <h2>Something went wrong</h2>
+    <h2>เกิดข้อผิดพลาด</h2>
     <p id="error-text" class="sub"></p>
-    <button class="btn btn-primary" onclick="location.reload()">Try again</button>
+    <button class="btn btn-primary" onclick="location.reload()">ลองอีกครั้ง</button>
   </section>
 
   <!-- Form -->
   <section id="view-form" class="hidden">
-    <h1>YEC Registration</h1>
-    <p class="sub">Register yourself or a group. An admin will review your sign-up.</p>
+    <h1>ลงทะเบียน YEC</h1>
+    <p class="sub">ลงทะเบียนแบบบุคคลหรือแบบกลุ่ม ผู้ดูแลจะตรวจสอบการลงทะเบียนของคุณ</p>
 
     <div class="card profile">
       <img id="profile-pic" alt="">
-      <div><div id="profile-name" style="font-weight:600"></div><div class="sub" style="margin:0">Signed in with LINE</div></div>
+      <div><div id="profile-name" style="font-weight:600"></div><div class="sub" style="margin:0">เข้าสู่ระบบด้วย LINE</div></div>
     </div>
 
     <form id="reg-form" novalidate>
       <div class="card">
-        <h2>Registration type</h2>
+        <h2>ประเภทการลงทะเบียน</h2>
         <div class="seg">
-          <label><input type="radio" name="type" value="individual" checked><span>Individual</span></label>
-          <label><input type="radio" name="type" value="group"><span>Group</span></label>
+          <label><input type="radio" name="type" value="individual" checked><span>บุคคล</span></label>
+          <label><input type="radio" name="type" value="group"><span>กลุ่ม</span></label>
         </div>
       </div>
 
       <!-- Placeholder fields: replace with the real YEC form later (see FIELDS below). -->
       <div class="card">
-        <h2 id="main-title">Your details</h2>
+        <h2 id="main-title">ข้อมูลของคุณ</h2>
         <div id="main-fields"></div>
       </div>
 
       <div id="group-block" class="card hidden">
-        <h2>Group</h2>
+        <h2>ข้อมูลกลุ่ม</h2>
         <div id="group-fields"></div>
-        <h2 style="margin-top:8px">Members</h2>
+        <h2 style="margin-top:8px">สมาชิก</h2>
         <div id="members"></div>
-        <button type="button" id="add-member" class="btn btn-ghost">+ Add member</button>
+        <button type="button" id="add-member" class="btn btn-ghost">+ เพิ่มสมาชิก</button>
       </div>
 
-      <button type="submit" id="submit-btn" class="btn btn-primary">Submit registration</button>
+      <button type="submit" id="submit-btn" class="btn btn-primary">ส่งการลงทะเบียน</button>
       <p id="form-error" class="error hidden"></p>
     </form>
   </section>
@@ -112,11 +113,11 @@
   <!-- Status (shown after submit, and whenever a registered user reopens the page) -->
   <section id="view-status" class="card center hidden">
     <div id="status-icon" class="icon">⏳</div>
-    <h2 id="status-title">Waiting for validation</h2>
-    <span id="status-badge" class="badge pending">Pending</span>
-    <p id="status-text" class="sub">Thanks! Your registration was received. An admin will review it soon. You can reopen this page any time to check your status.</p>
+    <h2 id="status-title">รอการตรวจสอบ</h2>
+    <span id="status-badge" class="badge pending">รอตรวจสอบ</span>
+    <p id="status-text" class="sub">ขอบคุณ! เราได้รับการลงทะเบียนของคุณแล้ว ผู้ดูแลจะตรวจสอบเร็ว ๆ นี้ คุณสามารถเปิดหน้านี้อีกครั้งเพื่อตรวจสอบสถานะได้ทุกเมื่อ</p>
     <div id="status-summary" class="summary"></div>
-    <button class="btn btn-primary" onclick="closeApp()" style="margin-top:12px">Close</button>
+    <button class="btn btn-primary" onclick="closeApp()" style="margin-top:12px">ปิด</button>
   </section>
 </main>
 
@@ -136,22 +137,22 @@ const CONFIG = {
 const FIELDS = {
   // Individual registrant, or the group's contact person
   person: [
-    { key: "fullName",  label: "Full name",       type: "text",  required: true },
-    { key: "nickname",  label: "Nickname",        type: "text",  required: false },
-    { key: "phone",     label: "Phone",           type: "tel",   required: true, pattern: "^[0-9+\\-\\s]{9,15}$" },
-    { key: "email",     label: "Email",           type: "email", required: false },
-    { key: "company",   label: "Company / Organization", type: "text", required: false },
-    { key: "province",  label: "Province",        type: "text",  required: false },
+    { key: "fullName",  label: "ชื่อ-นามสกุล",       type: "text",  required: true },
+    { key: "nickname",  label: "ชื่อเล่น",        type: "text",  required: false },
+    { key: "phone",     label: "เบอร์โทรศัพท์",           type: "tel",   required: true, pattern: "^[0-9+\\-\\s]{9,15}$" },
+    { key: "email",     label: "อีเมล",           type: "email", required: false },
+    { key: "company",   label: "บริษัท / หน่วยงาน", type: "text", required: false },
+    { key: "province",  label: "จังหวัด",        type: "text",  required: false },
   ],
   // Group-level fields
   group: [
-    { key: "groupName", label: "Group / Team name", type: "text", required: true },
+    { key: "groupName", label: "ชื่อกลุ่ม / ทีม", type: "text", required: true },
   ],
   // Each additional group member
   member: [
-    { key: "fullName",  label: "Full name", type: "text", required: true },
-    { key: "phone",     label: "Phone",     type: "tel",  required: false, pattern: "^[0-9+\\-\\s]{9,15}$" },
-    { key: "email",     label: "Email",     type: "email", required: false },
+    { key: "fullName",  label: "ชื่อ-นามสกุล", type: "text", required: true },
+    { key: "phone",     label: "เบอร์โทรศัพท์",     type: "tel",  required: false, pattern: "^[0-9+\\-\\s]{9,15}$" },
+    { key: "email",     label: "อีเมล",     type: "email", required: false },
   ],
 };
 /* ======================================================================= */
@@ -171,7 +172,7 @@ function fieldHtml(f, prefix) {
   const req = f.required ? ' <span class="req">*</span>' : "";
   let input;
   if (f.type === "select") {
-    input = `<select id="${id}" data-key="${f.key}" ${f.required ? "required" : ""}><option value="">Select…</option>` +
+    input = `<select id="${id}" data-key="${f.key}" ${f.required ? "required" : ""}><option value="">เลือก…</option>` +
       (f.options || []).map(o => `<option>${esc(o)}</option>`).join("") + `</select>`;
   } else if (f.type === "textarea") {
     input = `<textarea id="${id}" data-key="${f.key}" rows="3" ${f.required ? "required" : ""}></textarea>`;
@@ -194,7 +195,7 @@ function addMember() {
   const div = document.createElement("div");
   div.className = "member";
   div.innerHTML = `<div class="member-head"><strong class="m-title"></strong>
-    <button type="button" class="link-btn">Remove</button></div>` +
+    <button type="button" class="link-btn">ลบ</button></div>` +
     FIELDS.member.map(f => fieldHtml(f, `m${n}_`)).join("");
   div.querySelector(".link-btn").onclick = () => { div.remove(); renumber(); };
   $("members").appendChild(div);
@@ -202,14 +203,14 @@ function addMember() {
 }
 function renumber() {
   const items = [...$("members").children];
-  items.forEach((m, i) => m.querySelector(".m-title").textContent = `Member ${i + 1}`);
+  items.forEach((m, i) => m.querySelector(".m-title").textContent = `สมาชิกคนที่ ${i + 1}`);
   $("add-member").classList.toggle("hidden", items.length >= CONFIG.MAX_MEMBERS);
 }
 
 function setType(type) {
   const isGroup = type === "group";
   $("group-block").classList.toggle("hidden", !isGroup);
-  $("main-title").textContent = isGroup ? "Contact person (you)" : "Your details";
+  $("main-title").textContent = isGroup ? "ผู้ประสานงาน (คุณ)" : "ข้อมูลของคุณ";
   if (isGroup && $("members").children.length === 0) addMember();
 }
 
@@ -240,18 +241,18 @@ async function api(payload) {
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Server error " + res.status);
+  if (!res.ok) throw new Error("เซิร์ฟเวอร์ขัดข้อง " + res.status);
   return res.json();
 }
 
 function showStatus(rec) {
   const s = (rec.status || "pending").toLowerCase();
   const map = {
-    pending:  ["⏳", "Waiting for validation", "Pending",
-               "Thanks! Your registration was received. An admin will review it soon. You can reopen this page any time to check your status."],
-    approved: ["✅", "Registration approved", "Approved", "You're confirmed. See you at YEC!"],
-    rejected: ["❌", "Registration not approved", "Not approved",
-               rec.note ? rec.note : "Please contact the YEC team for details."],
+    pending:  ["⏳", "รอการตรวจสอบ", "รอตรวจสอบ",
+               "ขอบคุณ! เราได้รับการลงทะเบียนของคุณแล้ว ผู้ดูแลจะตรวจสอบเร็ว ๆ นี้ คุณสามารถเปิดหน้านี้อีกครั้งเพื่อตรวจสอบสถานะได้ทุกเมื่อ"],
+    approved: ["✅", "การลงทะเบียนได้รับการอนุมัติ", "อนุมัติแล้ว", "ยืนยันเรียบร้อย แล้วพบกันที่งาน YEC!"],
+    rejected: ["❌", "การลงทะเบียนไม่ได้รับการอนุมัติ", "ไม่อนุมัติ",
+               rec.note ? rec.note : "กรุณาติดต่อทีมงาน YEC เพื่อสอบถามรายละเอียด"],
   };
   const [icon, title, badge, text] = map[s] || map.pending;
   $("status-icon").textContent = icon;
@@ -264,8 +265,8 @@ function showStatus(rec) {
   if (r) {
     const names = [r.person?.fullName, ...(r.members || []).map(m => m.fullName)].filter(Boolean);
     $("status-summary").innerHTML =
-      `<div><b>Type:</b> ${r.type === "group" ? "Group" : "Individual"}${r.group?.groupName ? " · " + esc(r.group.groupName) : ""}</div>` +
-      `<div><b>${names.length > 1 ? "People" : "Name"}:</b> ${names.map(esc).join(", ")}</div>`;
+      `<div><b>ประเภท:</b> ${r.type === "group" ? "กลุ่ม" : "บุคคล"}${r.group?.groupName ? " · " + esc(r.group.groupName) : ""}</div>` +
+      `<div><b>${names.length > 1 ? "รายชื่อ" : "ชื่อ"}:</b> ${names.map(esc).join(", ")}</div>`;
   }
   show("status");
 }
@@ -287,7 +288,7 @@ async function onSubmit(e) {
   }
 
   const btn = $("submit-btn");
-  btn.disabled = true; btn.textContent = "Submitting…";
+  btn.disabled = true; btn.textContent = "กำลังส่ง…";
   try {
     const res = await api({
       action: "register",
@@ -296,13 +297,13 @@ async function onSubmit(e) {
       idToken,
       registration,
     });
-    if (res.ok === false) throw new Error(res.error || "Submission failed");
+    if (res.ok === false) throw new Error(res.error || "ส่งข้อมูลไม่สำเร็จ");
     showStatus({ status: res.status || "pending", registration });
   } catch (err) {
-    $("form-error").textContent = "Could not submit: " + err.message + ". Please try again.";
+    $("form-error").textContent = "ส่งข้อมูลไม่สำเร็จ: " + err.message + " กรุณาลองอีกครั้ง";
     $("form-error").classList.remove("hidden");
   } finally {
-    btn.disabled = false; btn.textContent = "Submit registration";
+    btn.disabled = false; btn.textContent = "ส่งการลงทะเบียน";
   }
 }
 
@@ -318,7 +319,7 @@ async function init() {
   try {
     if (DEMO) {
       $("demo-banner").classList.remove("hidden");
-      profile = { userId: "U_demo_user", displayName: "Demo User", pictureUrl: "" };
+      profile = { userId: "U_demo_user", displayName: "ผู้ใช้ทดลอง", pictureUrl: "" };
     } else {
       await liff.init({ liffId: CONFIG.LIFF_ID });
       if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
