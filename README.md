@@ -36,7 +36,7 @@ const CONFIG = {
 };
 ```
 
-Commit and push to `main`; GitHub Pages redeploys on its own. Share it as `https://liff.line.me/<LIFF_ID>`, e.g. in your LINE OA rich menu, a QR code, or a chat. Demo mode stays on until **both** values are set.
+Commit and push to `main`; GitHub Pages redeploys on its own. Share it as `https://liff.line.me/<LIFF_ID>` (YEC Phitsanulok: https://liff.line.me/2011950249-ekguOCPn), e.g. in your LINE OA rich menu, a QR code, or a chat. Demo mode stays on until **both** values are set.
 
 ## 4. Event details and form questions
 
