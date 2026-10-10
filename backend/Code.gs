@@ -187,17 +187,16 @@ function findRow_(sheet, userId) {
   return cell ? cell.getRow() : 0;
 }
 
-// Adds a column (before "Data (JSON)") for any form field the sheet doesn't have yet.
+// Adds columns (before "Data (JSON)") for any form fields the sheet doesn't have yet,
+// all in one go: one insert per column made the first submission take many seconds.
 function ensureColumns_(sheet, keys) {
-  let headers = headers_(sheet);
-  keys.forEach(k => {
-    if (headers.indexOf(k) >= 0) return;
-    const at = headers.indexOf(COL.json) + 1;
-    sheet.insertColumnAfter(at - 1); // copies the visible column on the left, not the hidden JSON one
-    sheet.getRange(1, at).setValue(k);
-    headers = headers_(sheet);
-  });
-  return headers;
+  const headers = headers_(sheet);
+  const missing = keys.filter((k, i) => headers.indexOf(k) < 0 && keys.indexOf(k) === i);
+  if (!missing.length) return headers;
+  const at = headers.indexOf(COL.json) + 1;
+  sheet.insertColumnsAfter(at - 1, missing.length); // copies the visible column on the left, not the hidden JSON one
+  sheet.getRange(1, at, 1, missing.length).setValues([missing]);
+  return headers_(sheet);
 }
 
 // Strings get a leading ' so Sheets keeps them as typed: phone 081... stays 081..., and
