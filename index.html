@@ -25,9 +25,6 @@
   .sub { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
   .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 14px;
     box-shadow: 0 1px 2px rgba(0,0,0,.06); }
-  .intro p { margin: 0 0 10px; }
-  .intro ul { margin: 0 0 10px; padding-left: 20px; }
-  .intro .facts { margin: 0 0 10px; }
   .section-title { color: var(--accent); border-bottom: 2px solid var(--accent-bg); padding-bottom: 8px; }
   .section-intro { font-size: 14px; margin: 0 0 14px; }
   .section-intro p { margin: 0 0 8px; }
@@ -99,7 +96,6 @@
   <!-- Form -->
   <section id="view-form" class="hidden">
     <img id="event-poster" class="poster" src="poster.jpg" width="1080" height="1350" alt="">
-    <div id="event-intro" class="card intro"></div>
 
     <div class="card profile">
       <img id="profile-pic" class="hidden" alt="">
@@ -155,16 +151,6 @@ const EVENT = {
 
 const baht = n => Number(n).toLocaleString("en-US") + " บาท";
 const rateLabel = r => `${r.name} ${baht(r.amount)} / ท่าน`;
-
-function introHtml() {
-  return `
-    <p>ชวนเพื่อน ๆ YEC ทั่วประเทศ มาสานสัมพันธ์ เปิดประสบการณ์เที่ยวเมืองสองแคว และสนุกด้วยกันตลอด 3 วัน 2 คืน 💜</p>
-    <div class="facts">📅 วันที่ 22–24 มกราคม 2570<br>📍 จังหวัดพิษณุโลก<br>🏨 พักที่โรงแรมท็อปแลนด์ (Topland)</div>
-    <p><b>ค่าลงทะเบียนต่อท่าน รวมที่พักและกิจกรรม 3 วัน 2 คืน</b></p>
-    <ul>${EVENT.rates.map(r => `<li>${esc(r.name)} ${baht(r.amount)}</li>`).join("")}</ul>
-    <p>🛏 กรณีพักเดี่ยว เพิ่ม ${baht(EVENT.singleRoomExtra)} สำหรับ 2 คืน</p>
-    <p style="margin:0">กรุณาลงทะเบียน 1 ท่านต่อ 1 คำตอบ และตรวจสอบข้อมูลให้ครบถ้วนก่อนส่งค่ะ</p>`;
-}
 
 function paymentIntroHtml() {
   const b = EVENT.bank;
@@ -284,7 +270,6 @@ function fieldHtml(f) {
 
 function renderForm() {
   $("event-poster").alt = EVENT.title + " " + EVENT.tagline;
-  $("event-intro").innerHTML = introHtml();
   $("sections").innerHTML = SECTIONS.map(s => `
     <div class="card"><h2 class="section-title">${esc(s.title)}</h2>
       ${s.intro ? `<div class="section-intro">${s.intro()}</div>` : ""}
