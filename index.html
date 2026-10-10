@@ -519,6 +519,27 @@ async function onSubmit(e) {
   }
 }
 
+// Needs the LIFF app's "openid" scope (ID token, which the backend checks) and ideally "profile"
+// (name and picture). If the scopes were changed after this person logged in, their old login
+// lacks them, so log in again once.
+async function lineProfile() {
+  idToken = liff.getIDToken();
+  const decoded = liff.getDecodedIDToken();
+  let p = null;
+  try { p = await liff.getProfile(); } catch (err) { console.warn("getProfile:", err); }
+  if (!p && decoded?.sub) p = { userId: decoded.sub, displayName: decoded.name || "", pictureUrl: decoded.picture || "" };
+  if (p && idToken) { sessionStorage.removeItem("yec_relogin"); return p; }
+
+  if (!sessionStorage.getItem("yec_relogin")) {
+    sessionStorage.setItem("yec_relogin", "1");
+    liff.logout();
+    liff.login({ redirectUri: location.origin + location.pathname });
+    return null;
+  }
+  sessionStorage.removeItem("yec_relogin");
+  throw new Error("ระบบยังตั้งค่าไม่ครบ: ผู้ดูแลต้องเปิดสิทธิ์ openid และ profile ใน LIFF app (LINE Developers → LIFF → Scopes)");
+}
+
 async function init() {
   renderForm();
   $("reg-form").addEventListener("submit", onSubmit);
@@ -540,8 +561,8 @@ async function init() {
     } else {
       await liff.init({ liffId: CONFIG.LIFF_ID });
       if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
-      profile = await liff.getProfile();
-      idToken = liff.getIDToken(); // lets the backend verify the user with LINE
+      profile = await lineProfile();
+      if (!profile) return; // re-logging in
     }
     $("profile-name").textContent = profile.displayName;
     if (profile.pictureUrl) $("profile-pic").src = profile.pictureUrl;
