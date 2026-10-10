@@ -30,7 +30,9 @@
   .section-intro { font-size: 14px; margin: 0 0 14px; }
   .section-intro p { margin: 0 0 8px; }
   .profile { display: flex; align-items: center; gap: 12px; }
-  .profile img { width: 44px; height: 44px; border-radius: 50%; background: #ddd; object-fit: cover; }
+  .profile img, .profile .avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex: none; }
+  .profile .avatar { background: var(--line); color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px; }
   .field { margin-bottom: 16px; }
   .field > .label { display: block; font-size: 15px; font-weight: 600; margin-bottom: 4px; }
   .field .req { color: var(--danger); }
@@ -99,8 +101,9 @@
     <div id="event-intro" class="card intro"></div>
 
     <div class="card profile">
-      <img id="profile-pic" alt="">
-      <div><div id="profile-name" style="font-weight:600"></div><div class="sub" style="margin:0">เข้าสู่ระบบด้วย LINE</div></div>
+      <img id="profile-pic" class="hidden" alt="">
+      <div id="profile-avatar" class="avatar">L</div>
+      <div><div id="profile-name" style="font-weight:600"></div><div class="sub" style="margin:0">บัญชี LINE ที่ใช้ลงทะเบียน</div></div>
     </div>
 
     <form id="reg-form" novalidate>
@@ -528,7 +531,9 @@ async function lineProfile() {
   let p = null;
   try { p = await liff.getProfile(); } catch (err) { console.warn("getProfile:", err); }
   if (!p && decoded?.sub) p = { userId: decoded.sub, displayName: decoded.name || "", pictureUrl: decoded.picture || "" };
-  if (p && idToken) { sessionStorage.removeItem("yec_relogin"); return p; }
+  const complete = p && idToken && p.displayName;
+  if (complete) { sessionStorage.removeItem("yec_relogin"); return p; }
+  if (p && idToken && sessionStorage.getItem("yec_relogin")) return p; // no name even after a fresh login: carry on without it
 
   if (!sessionStorage.getItem("yec_relogin")) {
     sessionStorage.setItem("yec_relogin", "1");
@@ -564,8 +569,13 @@ async function init() {
       profile = await lineProfile();
       if (!profile) return; // re-logging in
     }
-    $("profile-name").textContent = profile.displayName;
-    if (profile.pictureUrl) $("profile-pic").src = profile.pictureUrl;
+    $("profile-name").textContent = profile.displayName || "เชื่อมต่อบัญชี LINE แล้ว";
+    if (profile.displayName) $("profile-avatar").textContent = [...profile.displayName][0].toUpperCase();
+    if (profile.pictureUrl) {
+      $("profile-pic").src = profile.pictureUrl;
+      $("profile-pic").classList.remove("hidden");
+      $("profile-avatar").classList.add("hidden");
+    }
 
     // Already registered? Show status instead of the form.
     const rec = await api({ action: "status", lineUserId: profile.userId, idToken });
