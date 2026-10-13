@@ -74,7 +74,7 @@ Each sign-up is one row in **Registrations**, starting as `Pending`.
 - The person sees the new status the next time they open the page.
 - **Payment slip** links to the uploaded slip in the **YEC Registration Slips** Drive folder. Only the sheet owner can open it unless you share the folder with the other admins.
 - One registration per LINE account. To let someone register again, delete their row.
-- Each form question gets its own column automatically, so changing the form later needs no sheet changes. A few columns are hidden on purpose (LINE user ID, the raw data the page reads back, and the unused Type / People / Members); leave them as they are.
+- Each form question gets its own column automatically, so changing the form later needs no sheet changes. A few columns are hidden on purpose (the raw data the page reads back, and the unused Type / People / Members); leave them as they are. **LINE user ID** (right after LINE name) is how the duplicate check finds people: don't edit it.
 
 Later add-on: a LINE message to the person when they're approved (needs a LINE Official Account linked to the LIFF channel).
 

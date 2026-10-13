@@ -236,7 +236,6 @@ function setup() {
   slipFolder_(); // creates the slips folder now, so Drive permission is granted during setup
   // Not used by the one-person-per-form YEC form; kept so older rows still line up.
   [COL.type, COL.people, COL.members].forEach(h => sheet.hideColumns(headers.indexOf(h) + 1));
-  sheet.hideColumns(headers.indexOf(COL.lineUserId) + 1);
   sheet.hideColumns(headers.indexOf(COL.json) + 1);
 }
 
