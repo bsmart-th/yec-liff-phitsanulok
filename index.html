@@ -415,6 +415,8 @@ const SECTIONS = [
                       { label: "อาหารเจ" }, { label: "อื่น ๆ โปรดระบุ", value: "อื่น ๆ", other: true }] },
     { key: "allergy", col: "อาหารที่แพ้", label: "อาหารหรือวัตถุดิบที่แพ้", type: "text", required: true,
       help: "หากไม่มี กรุณาระบุ “ไม่มี”" },
+    { key: "alcohol", col: "เครื่องดื่มแอลกอฮอล์", label: "เครื่องดื่มแอลกอฮอล์", type: "radio", required: true,
+      options: () => [{ label: "ดื่ม" }, { label: "ไม่ดื่ม" }] },
     { key: "care", col: "ข้อมูลสำหรับการดูแล", label: "ข้อมูลที่ต้องการแจ้งเพื่อให้ทีมงานช่วยดูแลระหว่างกิจกรรม", type: "textarea", required: false,
       help: "แจ้งเฉพาะข้อมูลที่จำเป็น เช่น ข้อจำกัดในการเดินทางหรือการร่วมกิจกรรม" },
   ]},
