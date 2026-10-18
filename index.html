@@ -78,7 +78,7 @@
   .badge.pending { background: var(--warn-bg); color: var(--warn); }
   .badge.approved { background: var(--ok-bg); color: var(--line-dark); }
   .badge.rejected { background: var(--bad-bg); color: var(--danger); }
-  .icon { font-size: 48px; line-height: 1; margin-top: 8px; }
+  .icon { font-size: 48px; line-height: 1.15; margin: 8px 0 6px; }
   #status-text { white-space: pre-line; }
   .summary { text-align: left; font-size: 14px; color: var(--muted); margin-top: 12px; }
   .sending { position: fixed; inset: 0; background: rgba(20,20,30,.45); display: flex; align-items: center;
@@ -144,7 +144,7 @@
 
   <div id="page-register">
   <!-- Loading -->
-  <section id="view-loading" class="card center"><p>กำลังโหลด…</p></section>
+  <section id="view-loading" class="card center"><div class="spinner" style="margin-top:8px"></div><p class="sub" style="margin:0">กำลังโหลดข้อมูลการลงทะเบียน…</p></section>
 
   <!-- Error -->
   <section id="view-error" class="card center hidden">
@@ -684,6 +684,15 @@ async function api(payload) {
   return res.json();
 }
 
+// Last known status on this phone, so returning people don't wait for the backend.
+const statusKey = () => "yec_status_" + (profile && profile.userId);
+function cachedStatus() {
+  try { return JSON.parse(localStorage.getItem(statusKey()) || "null"); } catch (e) { return null; }
+}
+function cacheStatus(rec) {
+  try { rec ? localStorage.setItem(statusKey(), JSON.stringify(rec)) : localStorage.removeItem(statusKey()); } catch (e) {}
+}
+
 function showStatus(rec) {
   const s = (rec.status || "pending").toLowerCase();
   const map = {
@@ -768,7 +777,9 @@ async function onSubmit(e) {
       registration: Object.assign({ slip }, registration),
     });
     if (res.ok === false) throw new Error(res.error || "ส่งข้อมูลไม่สำเร็จ");
-    showStatus({ status: res.status || "pending", registration });
+    const rec = { status: res.status || "pending", registration };
+    cacheStatus(rec);
+    showStatus(rec);
   } catch (err) {
     $("form-error").textContent = "ส่งข้อมูลไม่สำเร็จ: " + err.message + " กรุณาลองอีกครั้ง";
     $("form-error").classList.remove("hidden");
@@ -977,10 +988,19 @@ async function init() {
     if (STAFF_MODE) { startCheckin(); return; }
 
     // Already registered? Show status instead of the form.
-    const rec = await api({ action: "status", lineUserId: profile.userId, idToken });
-    if (rec && rec.ok === false) throw new Error(rec.error || "โหลดสถานะการลงทะเบียนไม่สำเร็จ");
-    if (rec && rec.status && rec.status !== "none") showStatus(rec);
-    else show("form");
+    // The backend takes a few seconds, so show the last known status at once and refresh it after.
+    const cached = cachedStatus();
+    if (cached) showStatus(cached);
+    let rec;
+    try {
+      rec = await api({ action: "status", lineUserId: profile.userId, idToken });
+      if (rec && rec.ok === false) throw new Error(rec.error || "โหลดสถานะการลงทะเบียนไม่สำเร็จ");
+    } catch (err) {
+      if (cached) { console.warn("status refresh:", err); return; }
+      throw err;
+    }
+    if (rec && rec.status && rec.status !== "none") { cacheStatus(rec); showStatus(rec); }
+    else { cacheStatus(null); show("form"); }
   } catch (err) {
     fail(err.message || String(err));
   }
