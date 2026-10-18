@@ -35,7 +35,7 @@
   .field { margin-bottom: 16px; }
   .field > .label { display: block; font-size: 15px; font-weight: 600; margin-bottom: 4px; }
   .field .req { color: var(--danger); }
-  .help { color: var(--muted); font-size: 13px; margin: -2px 0 6px; }
+  .help { color: var(--muted); font-size: 13px; margin: -2px 0 6px; white-space: pre-line; }
   input[type=text], input[type=tel], input[type=email], input[type=number], input[type=date],
   input[type=time], select, textarea {
     width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
@@ -60,6 +60,10 @@
   table.prices th, table.prices td { border-bottom: 1px solid var(--border); padding: 6px 4px; text-align: left; }
   table.prices td.num, table.prices th.num { text-align: right; white-space: nowrap; }
   .bank { background: #f8f9fb; border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+  .copy-btn { border: 1px solid var(--line); color: var(--line-dark); background: #fff; border-radius: 999px;
+    font: inherit; font-size: 13px; padding: 2px 10px; margin-left: 6px; cursor: pointer; }
+  .qr { display: block; width: 100%; max-width: 280px; height: auto; margin: 12px auto 0; border-radius: 8px; }
+  .notice p { margin: 0 0 8px; }
   .btn { display: block; width: 100%; padding: 14px; border: 0; border-radius: 10px; font: inherit;
     font-weight: 700; cursor: pointer; }
   .btn-primary { background: var(--line); color: #fff; }
@@ -156,7 +160,9 @@ const EVENT = {
     { name: "ราคาเต็ม",        amount: 5500, note: "" },
   ],
   singleRoomExtra: 1200,
-  bank: { bank: "[ระบุธนาคาร]", number: "[ระบุเลขที่บัญชี]", name: "[ระบุชื่อบัญชี]" },
+  bank: { bank: "กสิกรไทย", number: "205-8-35998-2",
+          name: "YEC PHITSANULOK โดย น.ส.วิชุดา ชละเอม และ น.ส.หทัยภัทร ขอบใจ", qr: "promptpay-qr.png" },
+  contactLine: "@YECPhitsanulok",
   // Shown after submitting, while the registration is waiting for the team to check it
   thankYou: "ได้รับข้อมูลการลงทะเบียนแล้วค่ะ 💜\n\nทีมงานจะตรวจสอบข้อมูลและหลักฐานการชำระเงิน หากต้องการข้อมูลเพิ่มเติมจะติดต่อกลับตามช่องทางที่แจ้งไว้\n\nแล้วพบกันที่ “พิษณุโลก พิษณุเริ่ส”\nงานสานสัมพันธ์ภาคเหนือ ครั้งที่ 20\n22–24 มกราคม 2570 ✨",
 };
@@ -172,7 +178,26 @@ function paymentIntroHtml() {
       ${EVENT.rates.map(r => `<tr><td>${esc(r.name)}</td><td class="num">${baht(r.amount)}</td>
         <td class="num">${baht(r.amount + EVENT.singleRoomExtra)}</td></tr>`).join("")}</table>
     <div class="bank"><b>รายละเอียดบัญชีสำหรับชำระเงิน</b><br>
-      ธนาคาร: ${esc(b.bank)}<br>เลขที่บัญชี: ${esc(b.number)}<br>ชื่อบัญชี: ${esc(b.name)}</div>`;
+      ธนาคาร: ${esc(b.bank)}<br>
+      เลขที่บัญชี: <b>${esc(b.number)}</b>
+      <button type="button" class="copy-btn" onclick="copyAccount(this)">คัดลอกเลขบัญชี</button><br>
+      ชื่อบัญชี: ${esc(b.name)}
+      ${b.qr ? `<img class="qr" src="${esc(b.qr)}" width="600" height="814" alt="QR พร้อมเพย์ สำหรับโอนเข้าบัญชี ${esc(b.name)}">
+        <div class="help" style="margin:6px 0 0;text-align:center">กดค้างที่รูปเพื่อบันทึก แล้วเปิดสแกนในแอปธนาคาร</div>` : ""}</div>`;
+}
+
+function copyAccount(btn) {
+  const digits = EVENT.bank.number.replace(/\D/g, "");
+  const done = () => { btn.textContent = "คัดลอกแล้ว ✓"; setTimeout(() => btn.textContent = "คัดลอกเลขบัญชี", 2000); };
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(digits).then(done, () => fallbackCopy(digits, done));
+  else fallbackCopy(digits, done);
+}
+function fallbackCopy(text, done) {
+  const t = document.createElement("textarea");
+  t.value = text; t.setAttribute("readonly", ""); t.style.position = "fixed"; t.style.opacity = "0";
+  document.body.appendChild(t); t.select();
+  try { document.execCommand("copy"); done(); } catch (e) { prompt("คัดลอกเลขบัญชี", text); }
+  t.remove();
 }
 
 /* ============================ FORM QUESTIONS ============================
@@ -180,7 +205,7 @@ function paymentIntroHtml() {
    type: text | tel | email | number | date | time | textarea | radio | confirm | file
    radio options: { label, value?, note?, other? }  (other: true shows a "please specify" box) */
 const SECTIONS = [
-  { title: "ส่วนที่ 1 ข้อมูลผู้เข้าร่วม", fields: [
+  { title: "ข้อมูลผู้เข้าร่วม", fields: [
     { key: "fullName", col: "ชื่อ–นามสกุล", label: "ชื่อ–นามสกุล", type: "text", required: true },
     { key: "nickname", col: "ชื่อเล่น", label: "ชื่อเล่น", type: "text", required: true },
     { key: "org", col: "หน่วยงานที่สังกัด", label: "YEC / หอการค้า / หน่วยงานที่สังกัด", type: "text", required: true },
@@ -191,7 +216,7 @@ const SECTIONS = [
       help: "หากไม่มี LINE ID กรุณาระบุเบอร์โทรศัพท์ที่ใช้เพิ่มเพื่อน" },
     { key: "email", col: "อีเมล", label: "อีเมล", type: "email", required: false },
   ]},
-  { title: "ส่วนที่ 2 แพ็กเกจและที่พัก", fields: [
+  { title: "แพ็กเกจและที่พัก", fields: [
     { key: "rate", col: "อัตราค่าลงทะเบียน", label: "กรุณาเลือกอัตราค่าลงทะเบียน", type: "radio", required: true,
       help: "ทุกอัตรารวมที่พักโรงแรมท็อปแลนด์และกิจกรรม 3 วัน 2 คืน",
       options: () => EVENT.rates.map(r => ({ label: rateLabel(r), note: r.note, amount: r.amount })) },
@@ -204,7 +229,20 @@ const SECTIONS = [
       help: "สำหรับผู้เลือกพักร่วม หากยังไม่มีผู้พักด้วย กรุณาระบุ “ให้ทีมงานจัดให้” โดยผู้พักด้วยต้องลงทะเบียนแยกอีก 1 คำตอบ",
       showIf: v => v.room !== "พักเดี่ยว" },
   ]},
-  { title: "ส่วนที่ 3 กิจกรรมเพิ่มเติม", fields: [
+  { title: "ข้อมูลการเดินทาง", fields: [
+    { key: "travelMode", col: "เดินทางโดย", label: "ท่านเดินทางมายังจังหวัดพิษณุโลกโดยวิธีใด?", type: "radio", required: true,
+      options: () => [{ label: "เครื่องบิน" }, { label: "รถยนต์ส่วนตัว" }, { label: "รถไฟ" }, { label: "รถทัวร์" },
+                      { label: "อื่น ๆ", other: true }] },
+    { key: "flight", col: "สายการบิน / เที่ยวบิน", label: "สายการบิน / หมายเลขเที่ยวบิน", type: "text", required: true,
+      help: "กรณีเดินทางโดยเครื่องบิน", showIf: v => v.travelMode === "เครื่องบิน" },
+    { key: "arrivalDate", col: "วันที่มาถึง", label: "วันที่มาถึง", type: "date", required: true,
+      showIf: v => v.travelMode === "เครื่องบิน" },
+    { key: "arrivalTime", col: "เวลามาถึง", label: "เวลาที่มาถึง (น.)", type: "time", required: true,
+      showIf: v => v.travelMode === "เครื่องบิน" },
+    { key: "airportPickup", col: "รับที่สนามบิน", label: "ท่านต้องการให้ทีมงานไปรับที่สนามบินพิษณุโลกหรือไม่?", type: "radio", required: true,
+      options: () => [{ label: "ต้องการ" }, { label: "ไม่ต้องการ" }], showIf: v => v.travelMode === "เครื่องบิน" },
+  ]},
+  { title: "กิจกรรมเพิ่มเติม", fields: [
     { key: "almsGiving", col: "ตักบาตร 23 ม.ค.", label: "สนใจร่วมกิจกรรมตักบาตรหน้าโบสถ์วัดใหญ่หรือไม่?", type: "radio", required: true,
       help: "📅 วันที่ 23 มกราคม 2570 · ⏰ ออกจากโรงแรมท็อปแลนด์ เวลา 05.30 น.",
       options: () => [{ label: "ไป" }, { label: "ไม่ไป" }] },
@@ -212,7 +250,7 @@ const SECTIONS = [
       help: "📅 วันที่ 23 มกราคม 2570 · ⏰ เวลา 06.30–07.30 น.",
       options: () => [{ label: "ไป" }, { label: "ไม่ไป" }] },
   ]},
-  { title: "ส่วนที่ 4 อาหารและข้อมูลสำหรับการดูแล", fields: [
+  { title: "อาหารและข้อมูลสำหรับการดูแล", fields: [
     { key: "diet", col: "ความต้องการด้านอาหาร", label: "ความต้องการด้านอาหาร", type: "radio", required: true,
       options: () => [{ label: "อาหารทั่วไป" }, { label: "อาหารฮาลาล" }, { label: "อาหารมังสวิรัติ" },
                       { label: "อาหารเจ" }, { label: "อื่น ๆ โปรดระบุ", value: "อื่น ๆ", other: true }] },
@@ -221,7 +259,7 @@ const SECTIONS = [
     { key: "care", col: "ข้อมูลสำหรับการดูแล", label: "ข้อมูลที่ต้องการแจ้งเพื่อให้ทีมงานช่วยดูแลระหว่างกิจกรรม", type: "textarea", required: false,
       help: "แจ้งเฉพาะข้อมูลที่จำเป็น เช่น ข้อจำกัดในการเดินทางหรือการร่วมกิจกรรม" },
   ]},
-  { title: "ส่วนที่ 5 การชำระเงิน", intro: paymentIntroHtml, total: true, fields: [
+  { title: "การชำระเงิน", intro: paymentIntroHtml, total: true, fields: [
     { key: "amountPaid", col: "ยอดเงินที่โอน", label: "ยอดเงินที่โอนทั้งหมด (บาท)", type: "number", required: true },
     { key: "paidDate", col: "วันที่โอน", label: "วันที่โอนเงิน", type: "date", required: true },
     { key: "paidTime", col: "เวลาโอน", label: "เวลาโอนเงินตามสลิป", type: "time", required: true },
@@ -230,7 +268,18 @@ const SECTIONS = [
     { key: "remark", col: "หมายเหตุ", label: "หมายเหตุเพิ่มเติม", type: "textarea", required: false,
       help: "หากโอนรวมหลายท่าน กรุณาระบุชื่อผู้เข้าร่วมทั้งหมดและยอดชำระของแต่ละท่าน โดยแต่ละท่านยังต้องกรอกฟอร์มแยกกัน" },
   ]},
-  { title: "ส่วนที่ 6 ยืนยันข้อมูล",
+  { title: "การคุ้มครองข้อมูลส่วนบุคคล (PDPA)", intro: () => `<div class="notice">
+      <p>YEC หอการค้าจังหวัดพิษณุโลก จะเก็บรวบรวมและใช้ข้อมูลที่ท่านระบุในแบบฟอร์ม เช่น ชื่อ–นามสกุล จังหวัด/หน่วยงาน ข้อมูลติดต่อ และข้อมูลการชำระเงิน เพื่อดำเนินการลงทะเบียน ตรวจสอบการชำระเงิน ติดต่อประสานงาน จัดที่พัก การเดินทาง และกิจกรรมในงานสานสัมพันธ์ภาคเหนือ ครั้งที่ 20 “พิษณุโลก พิษณุเริ่ส” วันที่ 22–24 มกราคม 2570</p>
+      <p>ข้อมูลจะเปิดเผยเฉพาะแก่คณะทำงานและผู้ให้บริการที่เกี่ยวข้อง เช่น โรงแรมและผู้ให้บริการเดินทาง เท่าที่จำเป็นต่อการจัดงาน โดยมีมาตรการดูแลความปลอดภัย และจัดเก็บ ถึงหลังสิ้นสุดงาน เว้นแต่ข้อมูลที่กฎหมายกำหนดให้เก็บไว้นานกว่านั้น หากท่านไม่ให้ข้อมูลที่จำเป็น ผู้จัดอาจไม่สามารถดำเนินการลงทะเบียนหรือจัดบริการที่เกี่ยวข้องให้ท่านได้</p>
+      <p>ท่านสามารถติดต่อเพื่อขอใช้สิทธิเกี่ยวกับข้อมูลส่วนบุคคล เช่น ขอเข้าถึง แก้ไข ลบ คัดค้าน หรือระงับการใช้ข้อมูล ตามเงื่อนไขของกฎหมาย รวมถึงถอนความยินยอมในส่วนที่อาศัยความยินยอมได้ที่ LINE: ${esc(EVENT.contactLine)} และมีสิทธิร้องเรียนต่อสำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคล</p></div>`,
+    fields: [
+    { key: "pdpaAck", col: "รับทราบ PDPA", label: "รับทราบการคุ้มครองข้อมูลส่วนบุคคล", type: "confirm", required: true,
+      text: "ข้าพเจ้าได้อ่านและรับทราบรายละเอียดการเก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลข้างต้นแล้ว" },
+    { key: "photoConsent", col: "ยินยอมใช้ภาพ/วิดีโอ", label: "ความยินยอมในการใช้ภาพถ่ายและวิดีโอเพื่อประชาสัมพันธ์ (เลือกได้โดยสมัครใจ)", type: "radio", required: true,
+      help: "ข้าพเจ้ายินยอมให้ YEC หอการค้าจังหวัดพิษณุโลก ใช้และเผยแพร่ภาพถ่ายหรือวิดีโอที่ปรากฏตัวข้าพเจ้าจากการเข้าร่วมงาน เพื่อรายงานบรรยากาศและประชาสัมพันธ์งานผ่านเพจ Facebook และช่องทางประชาสัมพันธ์อย่างเป็นทางการของ YEC หอการค้าจังหวัดพิษณุโลก\n\nการไม่ให้ความยินยอมไม่มีผลต่อสิทธิในการลงทะเบียนหรือเข้าร่วมงาน ข้าพเจ้าสามารถถอนความยินยอมได้ทาง LINE: @YECPhitsanulok โดยการถอนความยินยอมไม่กระทบต่อการใช้ข้อมูลที่ดำเนินการโดยชอบก่อนการถอน",
+      options: () => [{ label: "ยินยอม" }, { label: "ไม่ยินยอม" }] },
+  ]},
+  { title: "ยืนยันข้อมูล",
     intro: () => `<p><b>คำชี้แจงการใช้ข้อมูล</b></p><p>ข้อมูลในแบบฟอร์มนี้ใช้สำหรับลงทะเบียน จัดที่พัก จัดอาหาร ประสานงานกิจกรรม และติดต่อเกี่ยวกับงาน โดยข้อมูลสำหรับการดูแลจะใช้เฉพาะเท่าที่จำเป็นในการจัดกิจกรรม</p>`,
     fields: [
     { key: "confirm", col: "ยืนยันข้อมูล", label: "ยืนยันการลงทะเบียน", type: "confirm", required: true,
@@ -282,8 +331,8 @@ function fieldHtml(f) {
 
 function renderForm() {
   $("event-poster").alt = EVENT.title + " " + EVENT.tagline;
-  $("sections").innerHTML = SECTIONS.map(s => `
-    <div class="card"><h2 class="section-title">${esc(s.title)}</h2>
+  $("sections").innerHTML = SECTIONS.map((s, i) => `
+    <div class="card"><h2 class="section-title">ส่วนที่ ${i + 1} ${esc(s.title)}</h2>
       ${s.intro ? `<div class="section-intro">${s.intro()}</div>` : ""}
       ${s.total ? `<div class="total" id="total-box">ยอดที่ต้องชำระของคุณ: <b id="total-amount">–</b>
         <div class="help" id="total-detail" style="margin:2px 0 0">เลือกอัตราค่าลงทะเบียนและรูปแบบการเข้าพักในส่วนที่ 2</div></div>` : ""}
@@ -327,7 +376,10 @@ function refresh() {
   ALL_FIELDS.filter(f => f.showIf).forEach(f => {
     const on = f.showIf(v);
     $(`f_${f.key}_field`).classList.toggle("hidden", !on);
-    if (!on) $("f_" + f.key).value = "";
+    if (!on) {
+      if (f.type === "radio") document.querySelectorAll(`input[name="${f.key}"]`).forEach(r => { r.checked = false; });
+      else $("f_" + f.key).value = "";
+    }
   });
   // "Other, please specify" boxes
   ALL_FIELDS.filter(f => f.type === "radio").forEach(f => {

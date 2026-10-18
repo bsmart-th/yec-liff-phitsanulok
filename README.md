@@ -42,8 +42,8 @@ Commit and push to `main`; GitHub Pages redeploys on its own. Share it as `https
 
 Everything you'd edit is near the top of the `<script>` in `index.html`:
 
-- **`EVENT`**: title, prices (`rates`), single-room extra, **bank account**, and the thank-you message. **Before opening registration, fill in the bank account and each rate's `note`** (its conditions or date range); they're placeholders in `[...]` now. Prices here feed the price list, the rate choices, the payment table and the "amount to pay" box, so change them only here.
-- **`SECTIONS`**: the six sections of questions. Each question has `label` (what people see), `col` (its column name in the Google Sheet), `type` (`text`, `tel`, `email`, `number`, `date`, `time`, `textarea`, `radio`, `confirm`, `file`), `required`, and optional `help`.
+- **`EVENT`**: title, prices (`rates`), single-room extra, **bank account**, and the thank-you message. The bank account and PromptPay QR (`promptpay-qr.png`) are filled in. Each rate's `note` (its conditions or date range) is still a `[...]` placeholder. Prices here feed the price list, the rate choices, the payment table and the "amount to pay" box, so change them only here.
+- **`SECTIONS`**: the sections of questions (numbered automatically), including travel, PDPA notice and photo consent. Each question has `label` (what people see), `col` (its column name in the Google Sheet), `type` (`text`, `tel`, `email`, `number`, `date`, `time`, `textarea`, `radio`, `confirm`, `file`), `required`, and optional `help`.
 
 The page works out the amount to pay from the rate plus the room choice (single room adds 1,200) and pre-fills the transfer amount; the person can change it, and the sheet keeps both (**ยอดที่ต้องชำระ** and **ยอดเงินที่โอน**) so they're easy to compare.
 
