@@ -18,6 +18,7 @@
   body { margin: 0; background: var(--bg); color: var(--text);
     font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; }
   main { max-width: 560px; margin: 0 auto; padding: 16px 16px 40px; }
+  body.has-tabs main { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
   h1 { font-size: 21px; line-height: 1.35; margin: 8px 0 4px; }
   h2 { font-size: 17px; margin: 0 0 12px; }
   .poster { display: block; width: 100%; height: auto; border-radius: 12px; margin-bottom: 14px;
@@ -98,6 +99,42 @@
   .result { border-radius: 12px; padding: 16px; text-align: center; margin-top: 14px; }
   .result.ok { background: var(--ok-bg); } .result.warn { background: var(--warn-bg); } .result.bad { background: var(--bad-bg); }
   .result .big { font-size: 20px; font-weight: 700; margin: 4px 0; }
+  /* Bottom tab bar and event info pages */
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: #fff; border-top: 1px solid var(--border);
+    display: flex; justify-content: center; padding-bottom: env(safe-area-inset-bottom); }
+  .tabs button { flex: 1; max-width: 140px; border: 0; background: none; font: inherit; font-size: 12px; color: var(--muted);
+    padding: 8px 2px 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .tabs button .ti { font-size: 21px; line-height: 1.1; filter: grayscale(1); opacity: .7; }
+  .tabs button.on { color: var(--accent); font-weight: 700; }
+  .tabs button.on .ti { filter: none; opacity: 1; }
+  .page-head { margin: 4px 0 14px; }
+  .page-head .kicker { color: #d6338a; font-weight: 700; font-size: 14px; }
+  .page-head h1 { margin: 2px 0 0; }
+  .sample { background: var(--warn-bg); color: var(--warn); font-size: 13px; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; }
+  .day-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 4px; }
+  .day-pill { background: #e0f4f4; color: #0d7f84; font-weight: 700; font-size: 13px; border-radius: 999px; padding: 2px 10px; }
+  .day-date { font-weight: 700; font-size: 17px; }
+  .day-theme { color: var(--muted); font-size: 14px; }
+  .slot { display: grid; grid-template-columns: 96px 1fr; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eef0f3; }
+  .slot:last-child { border-bottom: 0; }
+  .slot .time { color: #0d7f84; font-weight: 700; font-size: 14px; }
+  .slot .what { font-weight: 600; }
+  .slot .where { color: var(--muted); font-size: 13px; }
+  .map-link { color: var(--accent); font-size: 13px; text-decoration: none; white-space: nowrap; }
+  .foot-note { font-size: 13px; color: var(--muted); white-space: pre-line; }
+  .outfit { border-radius: 10px; background: #f8f9fb; padding: 10px 12px; margin-top: 10px; }
+  .outfit b { color: #d6338a; }
+  .outfit img, .route-img { display: block; width: 100%; height: auto; border-radius: 8px; margin-top: 8px; }
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; }
+  .chip { flex: none; border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+  .chip.on { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); font-weight: 700; }
+  .route-head { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+  .route-no { flex: none; width: 44px; height: 44px; border-radius: 12px; color: #fff; font-weight: 700; font-size: 20px;
+    display: flex; align-items: center; justify-content: center; }
+  .stops { list-style: none; margin: 8px 0 0; padding: 0 0 0 14px; border-left: 3px solid var(--accent-bg); }
+  .stops li { position: relative; padding: 0 0 12px 8px; }
+  .stops li::before { content: ""; position: absolute; left: -21px; top: 6px; width: 11px; height: 11px; border-radius: 50%; background: var(--accent); }
+  .stops .time { color: #0d7f84; font-weight: 700; font-size: 13px; }
   .demo { background: var(--warn-bg); color: var(--warn); font-size: 13px; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; }
 </style>
 </head>
@@ -105,6 +142,7 @@
 <main>
   <div id="demo-banner" class="demo hidden">โหมดทดลอง: ยังไม่ได้ตั้งค่า LIFF ID หรือ URL สำหรับส่งข้อมูล ข้อมูลจะยังไม่ถูกส่งจริง</div>
 
+  <div id="page-register">
   <!-- Loading -->
   <section id="view-loading" class="card center"><p>กำลังโหลด…</p></section>
 
@@ -155,6 +193,12 @@
     <div id="status-summary" class="summary"></div>
     <button class="btn btn-primary" onclick="closeApp()" style="margin-top:12px">ปิด</button>
   </section>
+  </div>
+
+  <!-- Event info pages, filled from INFO below. Each has its own link: https://liff.line.me/<LIFF_ID>?page=schedule -->
+  <div id="page-schedule" class="hidden"></div>
+  <div id="page-dress" class="hidden"></div>
+  <div id="page-routes" class="hidden"></div>
 
   <!-- Staff check-in: open https://liff.line.me/<LIFF_ID>?mode=checkin -->
   <section id="view-checkin" class="hidden">
@@ -176,6 +220,7 @@
     </div>
   </section>
 </main>
+<nav id="tabs" class="tabs hidden"></nav>
 
 <script>
 /* ================== CONFIG: edit these two values ================== */
@@ -205,6 +250,80 @@ const EVENT = {
   contactLine: "@YECPhitsanulok",
   // Shown after submitting, while the registration is waiting for the team to check it
   thankYou: "ได้รับข้อมูลการลงทะเบียนแล้วค่ะ 💜\n\nทีมงานจะตรวจสอบข้อมูลและหลักฐานการชำระเงิน หากต้องการข้อมูลเพิ่มเติมจะติดต่อกลับตามช่องทางที่แจ้งไว้\n\nแล้วพบกันที่ “พิษณุโลก พิษณุเริ่ส”\nงานสานสัมพันธ์ภาคเหนือ ครั้งที่ 20\n22–24 มกราคม 2570 ✨",
+};
+
+/* ===== EVENT INFO PAGES: schedule, dress code, activity routes =====
+   Plain text only, so changing a time or place is a text edit here.
+   sample: true shows a "ข้อมูลตัวอย่าง" banner on these pages; set it to false once the real content is in.
+   map: what to search in Google Maps (leave out for no map link). img: an image file in the repo (optional). */
+const INFO = {
+  sample: true,
+  kicker: "งานสานสัมพันธ์ภาคเหนือ ครั้งที่ 20 · 22–24 มกราคม 2570",
+  schedule: [
+    { day: "DAY 1", date: "22 มกราคม 2570", theme: "[ชื่อธีมวันที่ 1]", slots: [
+      { time: "13:00 – 15:00", what: "เช็คอินเข้าที่พัก รับ Welcome Bag", where: "โรงแรมท็อปแลนด์ พิษณุโลก", map: "Topland Hotel Phitsanulok" },
+      { time: "15:00 – 17:00", what: "พักผ่อนตามอัธยาศัย เปลี่ยนชุดสำหรับงานเลี้ยงต้อนรับ" },
+      { time: "17:30 – 18:00", what: "ลงทะเบียนหน้างานและถ่ายภาพ", where: "[สถานที่]" },
+      { time: "18:00 – 23:00", what: "Welcome Dinner", where: "[สถานที่]" },
+    ]},
+    { day: "DAY 2", date: "23 มกราคม 2570", theme: "[ชื่อธีมวันที่ 2]", slots: [
+      { time: "06:00 – 07:00", what: "ตักบาตรหน้าโบสถ์วัดใหญ่", where: "วัดพระศรีรัตนมหาธาตุวรมหาวิหาร", map: "วัดพระศรีรัตนมหาธาตุวรมหาวิหาร พิษณุโลก" },
+      { time: "06:00 – 07:30", what: "วิ่งตอนเช้า", where: "[เส้นทางวิ่ง]" },
+      { time: "07:30 – 08:30", what: "อาหารเช้าที่โรงแรม" },
+      { time: "09:00 – 16:00", what: "กิจกรรมตามเส้นทางที่เลือก", where: "ดูรายละเอียดในหน้า “เส้นทาง”" },
+      { time: "16:00 – 18:00", what: "กลับโรงแรม พักผ่อน เปลี่ยนชุดงานปาร์ตี้" },
+      { time: "18:00 – 24:00", what: "[ชื่องานเลี้ยง] Party", where: "[สถานที่]" },
+    ]},
+    { day: "DAY 3", date: "24 มกราคม 2570", theme: "[ชื่อธีมวันที่ 3]", slots: [
+      { time: "ก่อน 12:00", what: "เช็คเอาท์และฝากกระเป๋าที่โรงแรม" },
+      { time: "09:00 – 11:00", what: "[กิจกรรมช่วงเช้า]", where: "[สถานที่]" },
+      { time: "11:00 – 12:30", what: "ซื้อของฝาก", where: "[สถานที่]" },
+      { time: "13:00 เป็นต้นไป", what: "เดินทางกลับโดยสวัสดิภาพ" },
+    ]},
+  ],
+  scheduleNote: "กำหนดการอาจมีการเปลี่ยนแปลงตามความเหมาะสม ทีมงานจะแจ้งให้ทราบล่วงหน้า\nท่านที่มีเที่ยวบินกลับก่อนเวลา กรุณาแจ้งทีมงานล่วงหน้า",
+  dress: [
+    { day: "DAY 1", date: "22 มกราคม 2570", theme: "[ชื่อธีมวันที่ 1]", outfits: [
+      { when: "Welcome Dinner", what: "[เช่น ชุดพื้นเมือง หรือเสื้อ YEC จังหวัดตนเอง]", img: "" },
+    ]},
+    { day: "DAY 2", date: "23 มกราคม 2570", theme: "[ชื่อธีมวันที่ 2]", outfits: [
+      { when: "กลางวัน 09:00 น.", what: "เสื้อกิจกรรมที่งานแจก", img: "" },
+      { when: "งานปาร์ตี้ 18:00 น.", what: "[ธีมการแต่งกายงานปาร์ตี้]", img: "" },
+    ]},
+    { day: "DAY 3", date: "24 มกราคม 2570", theme: "[ชื่อธีมวันที่ 3]", outfits: [
+      { when: "ทั้งวัน", what: "ตามอัธยาศัย", img: "" },
+    ]},
+  ],
+  routes: [
+    { no: 1, name: "สายบุญ", sub: "ไหว้พระ 9 วัด เมืองสองแคว", color: "#7b4fc9", depart: "ออกเดินทาง 09:00 น. จากโรงแรมท็อปแลนด์", img: "", stops: [
+      { time: "09:30", what: "สักการะพระพุทธชินราช วัดใหญ่", map: "วัดพระศรีรัตนมหาธาตุวรมหาวิหาร พิษณุโลก" },
+      { time: "11:00", what: "วัดจุฬามณี", map: "วัดจุฬามณี พิษณุโลก" },
+      { time: "12:30", what: "อาหารกลางวัน [ชื่อร้าน]" },
+      { time: "14:00", what: "[จุดที่ 4]" },
+      { time: "16:00", what: "กลับโรงแรม" },
+    ]},
+    { no: 2, name: "สายกิน", sub: "ตระเวนชิมของดีพิษณุโลก", color: "#d6338a", depart: "ออกเดินทาง 09:00 น. จากโรงแรมท็อปแลนด์", img: "", stops: [
+      { time: "09:30", what: "[ร้านอาหารเช้า / ก๋วยเตี๋ยวห้อยขา]" },
+      { time: "11:00", what: "[คาเฟ่]" },
+      { time: "12:30", what: "ผัดผักบุ้งลอยฟ้า [ชื่อร้าน]" },
+      { time: "14:00", what: "[ตลาด / ของฝาก]" },
+      { time: "16:00", what: "กลับโรงแรม" },
+    ]},
+    { no: 3, name: "สายธรรมชาติ", sub: "น้ำตก ป่า และวิวเขา", color: "#2f9e44", depart: "ออกเดินทาง 08:30 น. จากโรงแรมท็อปแลนด์", img: "", stops: [
+      { time: "10:00", what: "น้ำตกแก่งโสภา", map: "น้ำตกแก่งโสภา" },
+      { time: "12:00", what: "อาหารกลางวัน [ชื่อร้าน]" },
+      { time: "13:30", what: "[จุดที่ 3]" },
+      { time: "16:30", what: "กลับโรงแรม" },
+    ]},
+    { no: 4, name: "สายประวัติศาสตร์", sub: "เมืองเก่า พิพิธภัณฑ์ และวิถีชุมชน", color: "#e8590c", depart: "ออกเดินทาง 09:00 น. จากโรงแรมท็อปแลนด์", img: "", stops: [
+      { time: "09:30", what: "พระราชวังจันทน์", map: "พระราชวังจันทน์ พิษณุโลก" },
+      { time: "11:00", what: "พิพิธภัณฑ์พื้นบ้านจ่าทวี", map: "พิพิธภัณฑ์พื้นบ้านจ่าทวี" },
+      { time: "12:30", what: "อาหารกลางวัน [ชื่อร้าน]" },
+      { time: "14:00", what: "[จุดที่ 4]" },
+      { time: "16:00", what: "กลับโรงแรม" },
+    ]},
+  ],
+  routesNote: "เวลาอาจเปลี่ยนแปลงตามความเหมาะสม ทีมงานจะแจ้งให้ทราบล่วงหน้า",
 };
 
 const baht = n => Number(n).toLocaleString("en-US") + " บาท";
@@ -336,6 +455,18 @@ let profile = null, idToken = null, slip = null, amountTouched = false;
 const qs = new URLSearchParams(location.search);
 const STAFF_MODE = qs.get("mode") === "checkin" || /mode=checkin/.test(qs.get("liff.state") || "");
 const HOME_URL = location.origin + location.pathname + (STAFF_MODE ? "?mode=checkin" : "");
+// Which tab to open: ?page=schedule|dress|routes (or inside liff.state on the first load from liff.line.me).
+const PAGES = [
+  { id: "register", icon: "📝", label: "ลงทะเบียน" },
+  { id: "schedule", icon: "🗓️", label: "กำหนดการ" },
+  { id: "dress",    icon: "👕", label: "การแต่งกาย" },
+  { id: "routes",   icon: "🗺️", label: "เส้นทาง" },
+];
+const startPage = (() => {
+  const inner = new URLSearchParams((qs.get("liff.state") || "").split("?")[1] || "");
+  const p = qs.get("page") || inner.get("page");
+  return PAGES.some(x => x.id === p) ? p : "register";
+})();
 const $ = (id) => document.getElementById(id);
 
 function show(view) {
@@ -576,6 +707,8 @@ function showStatus(rec) {
     qr.make();
     $("ticket-qr").innerHTML = qr.createSvgTag({ cellSize: 8, margin: 2, scalable: true });
     $("ticket-code").textContent = rec.ticket;
+    const tab = document.querySelector('#tabs [data-page="register"]');
+    if (tab) { tab.querySelector(".ti").textContent = "🎫"; tab.querySelector(".tl").textContent = "บัตรเข้างาน"; }
     $("ticket-checked").textContent = rec.checkedIn ? "✓ เช็คอินแล้ว " + rec.checkedIn : "";
     $("ticket-checked").classList.toggle("hidden", !rec.checkedIn);
   }
@@ -749,7 +882,61 @@ function startCheckin() {
   if (p) staffLogin(p);
 }
 
+/* ------------------------------ Event info pages ------------------------------ */
+
+const mapUrl = q => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+const mapLink = q => q ? ` <a class="map-link" href="${mapUrl(q)}" target="_blank" rel="noopener">📍 แผนที่</a>` : "";
+const pageHead = title => `<div class="page-head"><div class="kicker">${esc(INFO.kicker)}</div><h1>${esc(title)}</h1></div>` +
+  (INFO.sample ? `<div class="sample">ข้อมูลตัวอย่าง รอข้อมูลจริงจากทีมงาน</div>` : "");
+const dayHead = d => `<div class="day-head"><span class="day-pill">${esc(d.day)}</span>
+  <span class="day-date">${esc(d.date)}</span>${d.theme ? `<span class="day-theme">“${esc(d.theme)}”</span>` : ""}</div>`;
+
+function renderInfo() {
+  $("page-schedule").innerHTML = pageHead("กำหนดการ") + INFO.schedule.map(d => `<div class="card">${dayHead(d)}` +
+    d.slots.map(s => `<div class="slot"><div class="time">${esc(s.time)}</div><div><div class="what">${esc(s.what)}</div>` +
+      (s.where || s.map ? `<div class="where">${esc(s.where || "")}${mapLink(s.map)}</div>` : "") + `</div></div>`).join("") +
+    `</div>`).join("") + (INFO.scheduleNote ? `<div class="card foot-note">${esc(INFO.scheduleNote)}</div>` : "");
+
+  $("page-dress").innerHTML = pageHead("การแต่งกาย") + INFO.dress.map(d => `<div class="card">${dayHead(d)}` +
+    d.outfits.map(o => `<div class="outfit"><b>${esc(o.when)}</b><div>${esc(o.what)}</div>` +
+      (o.img ? `<img src="${esc(o.img)}" alt="${esc(o.what)}" loading="lazy">` : "") + `</div>`).join("") + `</div>`).join("");
+
+  $("page-routes").innerHTML = pageHead("เส้นทางกิจกรรม") +
+    `<div class="chips">${INFO.routes.map((r, i) => `<button type="button" class="chip${i ? "" : " on"}" data-route="${i}">${r.no}. ${esc(r.name)}</button>`).join("")}</div>` +
+    INFO.routes.map((r, i) => `<div class="card route${i ? " hidden" : ""}" data-route="${i}">
+      <div class="route-head"><div class="route-no" style="background:${esc(r.color)}">${r.no}</div>
+        <div><div style="font-weight:700;font-size:17px">${esc(r.name)}</div><div class="sub" style="margin:0">${esc(r.sub)}</div></div></div>
+      ${r.depart ? `<div class="where">${esc(r.depart)}</div>` : ""}
+      <ul class="stops">${r.stops.map(s => `<li><div class="time">${esc(s.time)}</div><div class="what">${esc(s.what)}${mapLink(s.map)}</div></li>`).join("")}</ul>
+      ${r.img ? `<img class="route-img" src="${esc(r.img)}" alt="${esc(r.name)}" loading="lazy">` : ""}</div>`).join("") +
+    (INFO.routesNote ? `<div class="card foot-note">${esc(INFO.routesNote)}</div>` : "");
+  $("page-routes").addEventListener("click", e => {
+    const b = e.target.closest(".chip");
+    if (!b) return;
+    $("page-routes").querySelectorAll("[data-route]").forEach(el => {
+      el.classList.toggle(el.classList.contains("chip") ? "on" : "hidden", el.classList.contains("chip") ? el === b : el.dataset.route !== b.dataset.route);
+    });
+  });
+
+  $("tabs").innerHTML = PAGES.map(p => `<button type="button" data-page="${p.id}"><span class="ti">${p.icon}</span><span class="tl">${p.label}</span></button>`).join("");
+  $("tabs").addEventListener("click", e => { const b = e.target.closest("button"); if (b) openPage(b.dataset.page); });
+  $("tabs").classList.remove("hidden");
+  document.body.classList.add("has-tabs");
+}
+
+let currentPage = "register", loginPending = false;
+function openPage(id, keepUrl) {
+  if (id === "register" && loginPending) { liff.login({ redirectUri: HOME_URL }); return; }
+  currentPage = id;
+  PAGES.forEach(p => $("page-" + p.id).classList.toggle("hidden", p.id !== id));
+  $("tabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.page === id));
+  // Not on the first call: before liff.init the URL still carries liff.state, which LIFF needs.
+  if (!keepUrl) try { history.replaceState(null, "", location.pathname + (id === "register" ? "" : "?page=" + id)); } catch (e) {}
+  window.scrollTo(0, 0);
+}
+
 async function init() {
+  if (!STAFF_MODE) { renderInfo(); openPage(startPage, true); }
   renderForm();
   $("reg-form").addEventListener("submit", onSubmit);
   $("reg-form").addEventListener("change", e => {
@@ -769,7 +956,11 @@ async function init() {
       profile = { userId: "U_demo_user", displayName: "ผู้ใช้ทดลอง", pictureUrl: "" };
     } else {
       await liff.init({ liffId: CONFIG.LIFF_ID });
-      if (!liff.isLoggedIn()) { liff.login({ redirectUri: HOME_URL }); return; }
+      if (!liff.isLoggedIn()) {
+        // Outside LINE: the info pages work without logging in; log in when they open the register tab.
+        if (currentPage !== "register") { loginPending = true; return; }
+        liff.login({ redirectUri: HOME_URL }); return;
+      }
       profile = await lineProfile();
       if (!profile) return; // re-logging in
     }

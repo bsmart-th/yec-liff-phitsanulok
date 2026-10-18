@@ -49,6 +49,12 @@ The page works out the amount to pay from the rate plus the room choice (single 
 
 One registration per LINE account, matching "1 ท่านต่อ 1 คำตอบ": each participant registers from their own LINE.
 
+### Event info pages (tab bar)
+
+The page has a bottom tab bar: ลงทะเบียน (becomes บัตรเข้างาน once approved), กำหนดการ, การแต่งกาย, เส้นทาง. Their content is the `INFO` block in `index.html`, right under `EVENT`: plain text, so changing a time or place is a text edit. `map` is what to search in Google Maps; `img` is an optional image file in the repo. Set `sample: false` to remove the "ข้อมูลตัวอย่าง" banner.
+
+Each tab has its own link, e.g. for rich menu buttons: `https://liff.line.me/<LIFF_ID>?page=schedule` (also `dress`, `routes`; no `page` = register). Nothing to change in LINE Developers for these.
+
 ## 5. Google Sheet backend (stores registrations, admin approves here)
 
 The backend is `backend/Code.gs`, a Google Apps Script attached to a Google Sheet. Free, nothing to host.
