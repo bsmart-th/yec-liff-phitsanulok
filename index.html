@@ -160,7 +160,7 @@
     <div class="icon">⚠️</div>
     <h2>เกิดข้อผิดพลาด</h2>
     <p id="error-text" class="sub"></p>
-    <button class="btn btn-primary" onclick="location.reload()">ลองอีกครั้ง</button>
+    <button class="btn btn-primary" onclick="retry()">ลองอีกครั้ง</button>
   </section>
 
   <!-- Form -->
@@ -471,7 +471,7 @@ const PAGES = [
   { id: "register", icon: "📝", label: "ลงทะเบียน" },
   { id: "schedule", icon: "🗓️", label: "กำหนดการ" },
   { id: "dress",    icon: "👕", label: "การแต่งกาย" },
-  { id: "routes",   icon: "🗺️", label: "เส้นทาง" },
+  { id: "routes",   icon: "🗺️", label: "กิจกรรม" },
 ];
 const startPage = (() => {
   const inner = new URLSearchParams((qs.get("liff.state") || "").split("?")[1] || "");
@@ -690,7 +690,32 @@ async function api(payload) {
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error("เซิร์ฟเวอร์ขัดข้อง " + res.status);
-  return res.json();
+  const out = await res.json();
+  // Expired LINE login (common in a browser left open): log in again instead of a dead-end error.
+  // Not while submitting, since logging in again would lose what they typed.
+  if (out && out.ok === false && /หมดอายุ/.test(out.error || "") && payload.action !== "register" && relogin()) {
+    return new Promise(() => {}); // the page is navigating away
+  }
+  return out;
+}
+
+// ID tokens last about an hour; a browser keeps the old one, which the backend then rejects.
+function tokenExpiresSoon() {
+  const exp = liff.getDecodedIDToken()?.exp;
+  return !!exp && exp * 1000 < Date.now() + 10 * 60 * 1000;
+}
+// Logs in again, at most once every 2 minutes so a real problem can't loop.
+function relogin(force) {
+  const last = Number(sessionStorage.getItem("yec_token_relogin") || 0);
+  if (!force && Date.now() - last < 2 * 60 * 1000) return false;
+  sessionStorage.setItem("yec_token_relogin", String(Date.now()));
+  try { liff.logout(); } catch (e) {}
+  liff.login({ redirectUri: HOME_URL });
+  return true;
+}
+function retry() {
+  if (!DEMO && window.liff && /หมดอายุ/.test($("error-text").textContent)) relogin(true);
+  else location.reload();
 }
 
 // Last known status on this phone, so returning people don't wait for the backend.
@@ -995,6 +1020,7 @@ async function init() {
         if (currentPage !== "register") { loginPending = true; return; }
         needLineApp(); return;
       }
+      if (tokenExpiresSoon() && relogin()) return;
       profile = await lineProfile();
       if (!profile) return; // re-logging in
     }
