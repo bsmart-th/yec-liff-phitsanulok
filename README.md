@@ -76,6 +76,18 @@ Each sign-up is one row in **Registrations**, starting as `Pending`.
 - One registration per LINE account. To let someone register again, delete their row.
 - Each form question gets its own column automatically, so changing the form later needs no sheet changes. A few columns are hidden on purpose (the raw data the page reads back, and the unused Type / People / Members); leave them as they are. **LINE user ID** (right after LINE name) is how the duplicate check finds people: don't edit it.
 
+### Entry tickets and check-in at the door
+
+Once a registration is **Approved**, the person's status screen shows an entry ticket: a QR code with their ticket code (e.g. `YEC-1A2B3C4D`, column **Ticket code**). Rows approved before tickets existed get a code the first time the person opens the page.
+
+Staff check people in with the same LIFF app in staff mode:
+1. LINE Developers → the LIFF app → turn **Scan QR** on (needed for the camera button).
+2. Apps Script → Project Settings → Script properties → add `STAFF_PASSCODE` with a passcode for the check-in staff.
+3. Staff open `https://liff.line.me/<LIFF_ID>?mode=checkin` in LINE on their phone, enter the passcode once (the phone remembers it), then tap **สแกน QR บัตรเข้างาน** or type the ticket code.
+4. The page shows the name and rate, and stamps **Checked in** in the sheet. It warns if the ticket was already used, the registration isn't approved, or the code doesn't exist. To undo a check-in, clear that cell.
+
+Changing `STAFF_PASSCODE` logs every staff phone out.
+
 Later add-on: a LINE message to the person when they're approved (needs a LINE Official Account linked to the LIFF channel).
 
 ## Backend API (for reference)
@@ -93,5 +105,12 @@ Expected reply: `{ "ok": true, "status": "pending" }` or `{ "ok": false, "error"
 { "action": "status", "lineUserId": "U…", "idToken": "…" }
 ```
 Expected reply: `{ "status": "none|pending|approved|rejected", "note": "optional reason", "registration": {…} }`.
+
+When approved, the reply also has `"ticket": "YEC-…"` and, after check-in, `"checkedIn": "d/M/yyyy HH:mm"`.
+
+```json
+{ "action": "checkin", "lineUserId": "U…", "idToken": "…", "passcode": "…", "code": "YEC-…" }
+```
+Staff only. Without `code` it just checks the passcode. Reply: `{ "ok": true, "result": "checked_in|already|not_approved|not_found", "name", "nickname", "rate", "room", "status", "checkedIn" }`, or `{ "ok": false, "error": "…", "badPasscode": true }`.
 
 `idToken` lets the backend confirm the user really is that LINE user (verify via `https://api.line.me/oauth2/v2.1/verify`), so nobody can register or read status on someone else's behalf.

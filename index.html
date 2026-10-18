@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ลงทะเบียนงานสานสัมพันธ์ภาคเหนือ ครั้งที่ 20</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" charset="utf-8"></script>
+<script src="qrcode.js"></script>
 <style>
   :root {
     --bg: #f5f6f8; --card: #fff; --text: #1d2129; --muted: #6b7280;
@@ -85,6 +86,18 @@
   .spinner { width: 36px; height: 36px; margin: 0 auto 12px; border: 4px solid var(--accent-bg);
     border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .ticket { border: 2px dashed var(--accent); border-radius: 14px; padding: 14px; margin: 12px 0 4px; background: #fff; }
+  .ticket .qrbox { width: 100%; max-width: 240px; margin: 6px auto; }
+  .ticket .qrbox svg { display: block; width: 100%; height: auto; }
+  .ticket .code { font: 700 18px/1.2 ui-monospace, Menlo, monospace; letter-spacing: 1px; margin: 4px 0; }
+  .checked { background: var(--ok-bg); color: var(--line-dark); border-radius: 8px; padding: 6px 10px; font-size: 14px; font-weight: 600; margin-top: 8px; }
+  .btn-outline { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+  .row { display: flex; gap: 8px; }
+  .row input { flex: 1; }
+  .row .btn { width: auto; padding: 0 16px; }
+  .result { border-radius: 12px; padding: 16px; text-align: center; margin-top: 14px; }
+  .result.ok { background: var(--ok-bg); } .result.warn { background: var(--warn-bg); } .result.bad { background: var(--bad-bg); }
+  .result .big { font-size: 20px; font-weight: 700; margin: 4px 0; }
   .demo { background: var(--warn-bg); color: var(--warn); font-size: 13px; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; }
 </style>
 </head>
@@ -132,8 +145,35 @@
     <h2 id="status-title"></h2>
     <span id="status-badge" class="badge pending"></span>
     <p id="status-text" class="sub"></p>
+    <div id="ticket" class="ticket hidden">
+      <div style="font-weight:700;color:var(--accent)">บัตรเข้างาน</div>
+      <div id="ticket-qr" class="qrbox"></div>
+      <div id="ticket-code" class="code"></div>
+      <div class="sub" style="margin:0">แสดง QR นี้ที่จุดลงทะเบียนหน้างาน</div>
+      <div id="ticket-checked" class="checked hidden"></div>
+    </div>
     <div id="status-summary" class="summary"></div>
     <button class="btn btn-primary" onclick="closeApp()" style="margin-top:12px">ปิด</button>
+  </section>
+
+  <!-- Staff check-in: open https://liff.line.me/<LIFF_ID>?mode=checkin -->
+  <section id="view-checkin" class="hidden">
+    <div class="card">
+      <h2 class="section-title">เช็คอินหน้างาน (เจ้าหน้าที่)</h2>
+      <div id="staff-login">
+        <div class="field"><span class="label">รหัสเจ้าหน้าที่</span>
+          <div class="row"><input id="staff-pass" type="password" autocomplete="off">
+            <button class="btn btn-primary" id="staff-pass-btn" type="button">เข้าสู่ระบบ</button></div>
+          <div id="staff-pass-err" class="field-error hidden"></div></div>
+      </div>
+      <div id="staff-tools" class="hidden">
+        <button class="btn btn-primary" id="scan-btn" type="button">📷 สแกน QR บัตรเข้างาน</button>
+        <div class="field" style="margin:14px 0 0"><span class="label">หรือพิมพ์รหัสบัตร</span>
+          <div class="row"><input id="manual-code" type="text" placeholder="YEC-XXXXXXXX" autocapitalize="characters">
+            <button class="btn btn-outline" id="manual-btn" type="button">ตรวจสอบ</button></div></div>
+        <div id="checkin-result" class="result hidden"></div>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -292,10 +332,14 @@ const SLIP_MAX_PDF_BYTES = 3 * 1024 * 1024;
 
 const DEMO = !CONFIG.LIFF_ID || !CONFIG.SUBMIT_URL;
 let profile = null, idToken = null, slip = null, amountTouched = false;
+// Staff check-in screen: the LIFF URL with ?mode=checkin. Before liff.init the query can still be inside liff.state.
+const qs = new URLSearchParams(location.search);
+const STAFF_MODE = qs.get("mode") === "checkin" || /mode=checkin/.test(qs.get("liff.state") || "");
+const HOME_URL = location.origin + location.pathname + (STAFF_MODE ? "?mode=checkin" : "");
 const $ = (id) => document.getElementById(id);
 
 function show(view) {
-  ["loading", "error", "form", "status"].forEach(v => $("view-" + v).classList.toggle("hidden", v !== view));
+  ["loading", "error", "form", "status", "checkin"].forEach(v => $("view-" + v).classList.toggle("hidden", v !== view));
   window.scrollTo(0, 0);
 }
 function fail(msg) { $("error-text").textContent = msg; show("error"); }
@@ -490,6 +534,7 @@ function validate() {
 async function api(payload) {
   if (DEMO) {
     await new Promise(r => setTimeout(r, 500));
+    if (payload.action === "checkin") return payload.code ? { ok: true, result: "not_found", code: payload.code } : { ok: true };
     if (payload.action === "status") return JSON.parse(localStorage.getItem("yec_demo") || '{"status":"none"}');
     const { slip: _, ...registration } = payload.registration; // too big for localStorage
     const rec = { status: "pending", registration };
@@ -521,6 +566,19 @@ function showStatus(rec) {
   $("status-badge").textContent = badge;
   $("status-badge").className = "badge " + (map[s] ? s : "pending");
   $("status-text").textContent = text;
+
+  // Entry ticket: the backend only sends a ticket code once the registration is approved.
+  const hasTicket = s === "approved" && rec.ticket;
+  $("ticket").classList.toggle("hidden", !hasTicket);
+  if (hasTicket) {
+    const qr = qrcode(0, "M");
+    qr.addData(rec.ticket);
+    qr.make();
+    $("ticket-qr").innerHTML = qr.createSvgTag({ cellSize: 8, margin: 2, scalable: true });
+    $("ticket-code").textContent = rec.ticket;
+    $("ticket-checked").textContent = rec.checkedIn ? "✓ เช็คอินแล้ว " + rec.checkedIn : "";
+    $("ticket-checked").classList.toggle("hidden", !rec.checkedIn);
+  }
 
   const p = rec.registration?.person;
   if (p) {
@@ -601,11 +659,94 @@ async function lineProfile() {
   if (!sessionStorage.getItem("yec_relogin")) {
     sessionStorage.setItem("yec_relogin", "1");
     liff.logout();
-    liff.login({ redirectUri: location.origin + location.pathname });
+    liff.login({ redirectUri: HOME_URL });
     return null;
   }
   sessionStorage.removeItem("yec_relogin");
   throw new Error("ระบบยังตั้งค่าไม่ครบ: ผู้ดูแลต้องเปิดสิทธิ์ openid และ profile ใน LIFF app (LINE Developers → LIFF → Scopes)");
+}
+
+/* ------------------------------ Staff check-in ------------------------------ */
+
+let staffPass = "";
+function savedPass() { try { return localStorage.getItem("yec_staff_pass") || ""; } catch (e) { return ""; } }
+
+async function staffLogin(pass) {
+  $("staff-pass-err").classList.add("hidden");
+  const btn = $("staff-pass-btn");
+  btn.disabled = true;
+  try {
+    const res = await api({ action: "checkin", lineUserId: profile.userId, idToken, passcode: pass });
+    if (res.ok === false) throw new Error(res.error || "เข้าสู่ระบบไม่สำเร็จ");
+    staffPass = pass;
+    try { localStorage.setItem("yec_staff_pass", pass); } catch (e) {}
+    $("staff-login").classList.add("hidden");
+    $("staff-tools").classList.remove("hidden");
+  } catch (err) {
+    try { localStorage.removeItem("yec_staff_pass"); } catch (e) {}
+    $("staff-login").classList.remove("hidden");
+    $("staff-pass-err").textContent = err.message;
+    $("staff-pass-err").classList.remove("hidden");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function normalizeCode(text) {
+  const raw = String(text || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!raw) return "";
+  return "YEC-" + (raw.startsWith("YEC") ? raw.slice(3) : raw);
+}
+
+function showResult(cls, html) {
+  const box = $("checkin-result");
+  box.className = "result " + cls;
+  box.innerHTML = html;
+}
+
+async function checkCode(text) {
+  const code = normalizeCode(text);
+  if (!code) return;
+  showResult("", `<div class="spinner"></div><div>กำลังตรวจสอบ ${esc(code)}…</div>`);
+  try {
+    const r = await api({ action: "checkin", lineUserId: profile.userId, idToken, passcode: staffPass, code });
+    if (r.ok === false) {
+      if (r.badPasscode) { staffPass = ""; $("staff-tools").classList.add("hidden"); $("staff-login").classList.remove("hidden"); }
+      throw new Error(r.error || "ตรวจสอบไม่สำเร็จ");
+    }
+    const who = `<div class="big">${esc(r.name)}${r.nickname ? ` (${esc(r.nickname)})` : ""}</div>` +
+      `<div class="sub" style="margin:0">${esc([r.rate, r.room].filter(Boolean).join(" · "))}</div>`;
+    if (r.result === "checked_in") showResult("ok", `<div class="icon">✅</div>${who}<div>เช็คอินสำเร็จ ${esc(r.checkedIn)}</div>`);
+    else if (r.result === "already") showResult("warn", `<div class="icon">⚠️</div>${who}<div><b>เช็คอินไปแล้ว</b> เมื่อ ${esc(r.checkedIn)}</div>`);
+    else if (r.result === "not_approved") showResult("bad", `<div class="icon">⛔</div>${who}<div><b>ยังไม่ได้รับการยืนยัน</b> (สถานะ: ${esc(r.status)})</div>`);
+    else showResult("bad", `<div class="icon">❌</div><div class="big">ไม่พบบัตรนี้</div><div>${esc(code)}</div>`);
+    $("manual-code").value = "";
+  } catch (err) {
+    showResult("bad", `<div class="icon">⚠️</div><div>${esc(err.message)}</div>`);
+  }
+}
+
+async function scan() {
+  try {
+    if (DEMO || !liff.isApiAvailable("scanCodeV2")) {
+      throw new Error("สแกนในหน้านี้ไม่ได้ กรุณาเปิดผ่านแอป LINE บนมือถือ (และเปิด Scan QR ใน LIFF) หรือพิมพ์รหัสบัตรแทน");
+    }
+    const res = await liff.scanCodeV2();
+    if (res && res.value) await checkCode(res.value);
+  } catch (err) {
+    showResult("bad", `<div class="icon">⚠️</div><div>${esc(err.message || String(err))}</div>`);
+  }
+}
+
+function startCheckin() {
+  $("staff-pass-btn").addEventListener("click", () => staffLogin($("staff-pass").value.trim()));
+  $("staff-pass").addEventListener("keydown", e => { if (e.key === "Enter") staffLogin($("staff-pass").value.trim()); });
+  $("scan-btn").addEventListener("click", scan);
+  $("manual-btn").addEventListener("click", () => checkCode($("manual-code").value));
+  $("manual-code").addEventListener("keydown", e => { if (e.key === "Enter") checkCode($("manual-code").value); });
+  show("checkin");
+  const p = savedPass();
+  if (p) staffLogin(p);
 }
 
 async function init() {
@@ -628,7 +769,7 @@ async function init() {
       profile = { userId: "U_demo_user", displayName: "ผู้ใช้ทดลอง", pictureUrl: "" };
     } else {
       await liff.init({ liffId: CONFIG.LIFF_ID });
-      if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
+      if (!liff.isLoggedIn()) { liff.login({ redirectUri: HOME_URL }); return; }
       profile = await lineProfile();
       if (!profile) return; // re-logging in
     }
@@ -639,6 +780,8 @@ async function init() {
       $("profile-pic").classList.remove("hidden");
       $("profile-avatar").classList.add("hidden");
     }
+
+    if (STAFF_MODE) { startCheckin(); return; }
 
     // Already registered? Show status instead of the form.
     const rec = await api({ action: "status", lineUserId: profile.userId, idToken });

@@ -5,7 +5,11 @@
  *   { action: "register", lineUserId, lineDisplayName, idToken, registration }  -> { ok, status }
  *     registration.slip = { name, mimeType, data (base64) } is the payment slip; it is saved
  *     to a Google Drive folder and its link goes in the "Payment slip" column.
- *   { action: "status",   lineUserId, idToken }                                  -> { status, note, registration }
+ *   { action: "status",   lineUserId, idToken }                                  -> { status, note, registration, ticket?, checkedIn? }
+ *     ticket (the entry QR code's text) is only returned once the registration is Approved.
+ *   { action: "checkin",  lineUserId, idToken, passcode, code? }                   -> { ok, result, name, ... }
+ *     Staff only (passcode = STAFF_PASSCODE in Script properties). Without code it just checks the passcode.
+ *     result: "checked_in" (stamped now), "already" (stamped before), "not_approved" or "not_found".
  *
  * Admins review in the "Registrations" sheet: set Status to Approved or Rejected
  * (optionally write a Note to applicant). The applicant sees it next time they open the page.
@@ -30,6 +34,8 @@ const COL = {
   lineUserId: "LINE user ID",
   members: "Members",
   slip: "Payment slip",
+  ticket: "Ticket code",
+  checkedIn: "Checked in",
   json: "Data (JSON)",
 };
 const FIXED_HEADERS = Object.values(COL);
@@ -42,6 +48,7 @@ function doPost(e) {
     const userId = verifyUser_(req.idToken, req.lineUserId);
     if (req.action === "register") return json_(register_(userId, req));
     if (req.action === "status") return json_(getStatus_(userId));
+    if (req.action === "checkin") return json_(checkin_(req));
     return json_({ ok: false, error: "คำขอไม่ถูกต้อง" });
   } catch (err) {
     return json_({ ok: false, error: String(err.message || err) });
@@ -73,7 +80,7 @@ function register_(userId, req) {
     const slipUrl = slip ? saveSlip_(slip, reg.person, userId) : "";
 
     const fields = Object.assign({}, reg.person, reg.group || {});
-    const headers = ensureColumns_(sheet, Object.keys(fields).concat(COL.slip)); // older sheets lack the slip column
+    const headers = ensureColumns_(sheet, Object.keys(fields).concat(COL.slip, COL.ticket, COL.checkedIn)); // older sheets lack these
     const members = reg.members || [];
 
     const values = {};
@@ -87,6 +94,7 @@ function register_(userId, req) {
       .map((m, i) => (i + 1) + ") " + Object.values(m).filter(String).join(", "))
       .join("\n");
     values[COL.slip] = slipUrl;
+    values[COL.ticket] = newTicketCode_();
     values[COL.json] = JSON.stringify(reg);
     Object.keys(fields).forEach(k => { values[k] = fields[k]; });
 
@@ -109,11 +117,86 @@ function getStatus_(userId) {
   let registration = null;
   try { registration = JSON.parse(get(COL.json)); } catch (e) {}
   const status = String(get(COL.status) || "Pending").trim().toLowerCase();
-  return {
+  const out = {
     status: ["pending", "approved", "rejected"].indexOf(status) >= 0 ? status : "pending",
     note: String(get(COL.note) || ""),
     registration: registration,
   };
+  if (out.status === "approved") {
+    out.ticket = String(get(COL.ticket) || "") || ticketFor_(sheet, row); // rows from before tickets existed
+    const at = get(COL.checkedIn);
+    if (at) out.checkedIn = at instanceof Date ? fmtTime_(at) : String(at);
+  }
+  return out;
+}
+
+/* ============================ Entry ticket ============================ */
+
+function newTicketCode_() {
+  return "YEC-" + Utilities.getUuid().replace(/-/g, "").slice(0, 8).toUpperCase();
+}
+
+// Gives an existing row a ticket code (and adds the ticket columns if the sheet lacks them).
+function ticketFor_(sheet, row) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const headers = ensureColumns_(sheet, [COL.ticket, COL.checkedIn]);
+    const cell = sheet.getRange(row, headers.indexOf(COL.ticket) + 1);
+    const code = String(cell.getValue() || "") || newTicketCode_();
+    cell.setValue(code);
+    return code;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// Staff scan an attendee's ticket at the door: looks it up and stamps "Checked in" once.
+function checkin_(req) {
+  const passcode = PropertiesService.getScriptProperties().getProperty("STAFF_PASSCODE");
+  if (!passcode) throw new Error("ยังไม่ได้ตั้งรหัสเจ้าหน้าที่ (STAFF_PASSCODE ใน Script properties)");
+  if (String(req.passcode || "").trim() !== passcode.trim()) return { ok: false, error: "รหัสเจ้าหน้าที่ไม่ถูกต้อง", badPasscode: true };
+  const code = String(req.code || "").trim().toUpperCase();
+  if (!code) return { ok: true }; // passcode check only
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000); // two staff scanning the same ticket at once still stamp it once
+  try {
+    const sheet = getSheet_();
+    const headers = ensureColumns_(sheet, [COL.ticket, COL.checkedIn]);
+    const col = headers.indexOf(COL.ticket) + 1;
+    const found = sheet.getLastRow() < 2 ? null : sheet.getRange(2, col, sheet.getLastRow() - 1, 1)
+      .createTextFinder(code).matchEntireCell(true).findNext();
+    if (!found) return { ok: true, result: "not_found", code: code };
+
+    const row = found.getRow();
+    const data = sheet.getRange(row, 1, 1, headers.length).getValues()[0];
+    const get = name => data[headers.indexOf(name)];
+    let person = {};
+    try { person = JSON.parse(get(COL.json)).person || {}; } catch (e) {}
+    const out = {
+      ok: true,
+      code: code,
+      name: String(person["ชื่อ–นามสกุล"] || get(COL.lineName) || ""),
+      nickname: String(person["ชื่อเล่น"] || ""),
+      rate: String(person["อัตราค่าลงทะเบียน"] || ""),
+      room: String(person["รูปแบบการเข้าพัก"] || ""),
+      status: String(get(COL.status) || "Pending"),
+    };
+    if (out.status.trim().toLowerCase() !== "approved") return Object.assign(out, { result: "not_approved" });
+
+    const before = get(COL.checkedIn);
+    if (before) return Object.assign(out, { result: "already", checkedIn: before instanceof Date ? fmtTime_(before) : String(before) });
+    const now = new Date();
+    sheet.getRange(row, headers.indexOf(COL.checkedIn) + 1).setNumberFormat("yyyy-mm-dd hh:mm").setValue(now);
+    return Object.assign(out, { result: "checked_in", checkedIn: fmtTime_(now) });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function fmtTime_(d) {
+  return Utilities.formatDate(d, Session.getScriptTimeZone(), "d/M/yyyy HH:mm");
 }
 
 /* ============================ Payment slip ============================ */
