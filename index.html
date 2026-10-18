@@ -384,7 +384,7 @@ const SECTIONS = [
         { label: "พักร่วมกับผู้เข้าร่วมท่านอื่น", value: "พักร่วม", extra: 0 },
         { label: `พักเดี่ยว เพิ่ม ${baht(EVENT.singleRoomExtra)} สำหรับ 2 คืน`, value: "พักเดี่ยว", extra: EVENT.singleRoomExtra },
       ] },
-    { key: "roommate", col: "ผู้ที่ต้องการพักด้วย", label: "ชื่อ–นามสกุลผู้ที่ต้องการพักด้วย", type: "text", required: false,
+    { key: "roommate", col: "ผู้ที่ต้องการพักด้วย", label: "ชื่อ–นามสกุล ผู้ที่ต้องการพักด้วย", type: "text", required: false,
       help: "สำหรับผู้เลือกพักร่วม หากยังไม่มีผู้พักด้วย กรุณาระบุ “ให้ทีมงานจัดให้” โดยผู้พักด้วยต้องลงทะเบียนแยกอีก 1 คำตอบ",
       showIf: v => v.room !== "พักเดี่ยว" },
   ]},
