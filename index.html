@@ -147,6 +147,15 @@
   <section id="view-loading" class="card center"><div class="spinner" style="margin-top:8px"></div><p class="sub" style="margin:0">กำลังโหลดข้อมูลการลงทะเบียน…</p></section>
 
   <!-- Error -->
+  <!-- Opened in a phone browser instead of LINE: LINE's web login often fails there when the LINE app is installed -->
+  <section id="view-openline" class="card center hidden">
+    <div class="icon">💬</div>
+    <h2>กรุณาเปิดหน้านี้ในแอป LINE</h2>
+    <p class="sub">หน้านี้ต้องเข้าสู่ระบบด้วยบัญชี LINE ซึ่งจะใช้ได้ดีที่สุดเมื่อเปิดจากในแอป LINE เช่น กดลิงก์จากแชทหรือ Rich menu</p>
+    <a id="openline-btn" class="btn btn-primary" style="text-decoration:none;box-sizing:border-box">เปิดในแอป LINE</a>
+    <button class="btn btn-outline" style="margin-top:10px" onclick="webLogin()">เข้าสู่ระบบด้วย LINE ในเบราว์เซอร์นี้</button>
+  </section>
+
   <section id="view-error" class="card center hidden">
     <div class="icon">⚠️</div>
     <h2>เกิดข้อผิดพลาด</h2>
@@ -472,7 +481,7 @@ const startPage = (() => {
 const $ = (id) => document.getElementById(id);
 
 function show(view) {
-  ["loading", "error", "form", "status", "checkin"].forEach(v => $("view-" + v).classList.toggle("hidden", v !== view));
+  ["loading", "openline", "error", "form", "status", "checkin"].forEach(v => $("view-" + v).classList.toggle("hidden", v !== view));
   window.scrollTo(0, 0);
 }
 function fail(msg) { $("error-text").textContent = msg; show("error"); }
@@ -941,7 +950,7 @@ function renderInfo() {
 
 let currentPage = "register", loginPending = false;
 function openPage(id, keepUrl) {
-  if (id === "register" && loginPending) { liff.login({ redirectUri: HOME_URL }); return; }
+  if (id === "register" && loginPending) { loginPending = false; needLineApp(); }
   currentPage = id;
   PAGES.forEach(p => $("page-" + p.id).classList.toggle("hidden", p.id !== id));
   $("tabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.page === id));
@@ -949,6 +958,16 @@ function openPage(id, keepUrl) {
   if (!keepUrl) try { history.replaceState(null, "", location.pathname + (id === "register" ? "" : "?page=" + id)); } catch (e) {}
   window.scrollTo(0, 0);
 }
+
+// Not logged in. Inside LINE, logging in is silent. In a phone browser, LINE's web login tends to
+// bounce between LINE and the page when the LINE app is installed, so offer to open the page in LINE.
+function needLineApp() {
+  if (liff.isInClient()) { liff.login({ redirectUri: HOME_URL }); return; }
+  const q = STAFF_MODE ? "?mode=checkin" : "";
+  $("openline-btn").href = "https://line.me/R/app/" + CONFIG.LIFF_ID + q;
+  show("openline");
+}
+function webLogin() { liff.login({ redirectUri: HOME_URL }); }
 
 async function init() {
   if (!STAFF_MODE) { renderInfo(); openPage(startPage, true); }
@@ -974,7 +993,7 @@ async function init() {
       if (!liff.isLoggedIn()) {
         // Outside LINE: the info pages work without logging in; log in when they open the register tab.
         if (currentPage !== "register") { loginPending = true; return; }
-        liff.login({ redirectUri: HOME_URL }); return;
+        needLineApp(); return;
       }
       profile = await lineProfile();
       if (!profile) return; // re-logging in
