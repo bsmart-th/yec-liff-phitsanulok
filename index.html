@@ -823,7 +823,9 @@ async function staffLogin(pass) {
   btn.disabled = true;
   try {
     const res = await api({ action: "checkin", lineUserId: profile.userId, idToken, passcode: pass });
-    if (res.ok === false) throw new Error(res.error || "เข้าสู่ระบบไม่สำเร็จ");
+    if (res.ok === false) throw new Error(res.error === "คำขอไม่ถูกต้อง"
+      ? "ระบบหลังบ้านยังไม่รองรับการเช็คอิน กรุณาวาง Code.gs เวอร์ชันล่าสุดใน Apps Script แล้ว Deploy ใหม่"
+      : res.error || "เข้าสู่ระบบไม่สำเร็จ");
     staffPass = pass;
     try { localStorage.setItem("yec_staff_pass", pass); } catch (e) {}
     $("staff-login").classList.add("hidden");
