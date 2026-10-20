@@ -375,6 +375,8 @@ function fallbackCopy(text, done) {
 const SECTIONS = [
   { title: "ข้อมูลผู้เข้าร่วม", fields: [
     { key: "fullName", col: "ชื่อ–นามสกุล", label: "ชื่อ–นามสกุล", type: "text", required: true },
+    { key: "age", col: "อายุ", label: "อายุ (ใช้เพื่อเป็นข้อมูลในการทำประกันภัย)", type: "number", required: true,
+      integer: true, min: 15, max: 99 },
     { key: "nickname", col: "ชื่อเล่น", label: "ชื่อเล่น", type: "text", required: true },
     { key: "org", col: "หน่วยงานที่สังกัด", label: "YEC / หอการค้า / หน่วยงานที่สังกัด", type: "text", required: true },
     { key: "province", col: "จังหวัดที่สังกัด", label: "จังหวัดที่สังกัด", type: "text", required: true },
@@ -508,7 +510,7 @@ function fieldHtml(f) {
   } else if (f.type === "textarea") {
     input = `<textarea id="${id}" rows="3" ${f.required ? "required" : ""}></textarea>`;
   } else {
-    const extra = f.type === "number" ? 'inputmode="decimal" min="0" step="any"' : f.type === "tel" ? 'inputmode="tel"' : "";
+    const extra = f.type === "number" ? (f.integer ? `inputmode="numeric" min="${f.min ?? 0}" ${f.max ? `max="${f.max}"` : ""} step="1"` : 'inputmode="decimal" min="0" step="any"') : f.type === "tel" ? 'inputmode="tel"' : "";
     input = `<input id="${id}" type="${f.type}" ${extra} ${f.required ? "required" : ""} ${f.pattern ? `pattern="${f.pattern}"` : ""}>`;
   }
   return `<div class="field" id="${id}_field"><span class="label">${esc(f.label)}${req}</span>${help}${input}
